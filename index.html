@@ -1347,18 +1347,44 @@ function App() {
                   : t.variantType === 'none' ? '' : (t.variantType || '');
     return [series, vol, variant].filter(Boolean).join(' ') || 'Cover';
   }
-  async function exportA4PDF() {
+  // Papierformate für den Print-PDF-Export. A4-Artboard (630×891) füllt A4 randlos;
+  // bei abweichendem Seitenverhältnis (US-Letter) wird zentriert eingepasst statt verzerrt.
+  const PDF_PAPERS = {
+    a4:     { jsFormat:'a4',     w:210,   h:297,   label:'A4' },
+    letter: { jsFormat:'letter', w:215.9, h:279.4, label:'US-Letter' },
+  };
+  // Ein gerendertes Artboard seitenverhältnis-erhaltend zentriert auf eine PDF-Seite legen.
+  function placeContain(pdf, canvas, paper) {
+    const ar = canvas.width / canvas.height;    // Seitenverhältnis des gerenderten Artboards
+    let w = paper.w, h = w / ar;
+    if (h > paper.h) { h = paper.h; w = h * ar; } // an Höhe einpassen, falls zu hoch
+    const x = (paper.w - w) / 2, y = (paper.h - h) / 2; // zentriert (weiße Ränder)
+    pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', x, y, w, h);
+  }
+  async function exportPDF(paperKey) {
+    const paper = PDF_PAPERS[paperKey];
     const front = refs.current['front-' + themeKey]?.current;
     const back = refs.current['back-' + themeKey]?.current;
-    if (!front || !back) return;
+    if (!front || !paper) return;
     const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF({ unit:'mm', format:'a4', orientation:'portrait' });
-    const fc = await captureNode(front, 4.85);
-    pdf.addImage(fc.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, 210, 297);
-    pdf.addPage();
-    const bc = await captureNode(back, 4.85);
-    pdf.addImage(bc.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, 210, 297);
-    pdf.save(`cover-${themeKey}-A4.pdf`);
+    const pdf = new jsPDF({ unit:'mm', format:paper.jsFormat, orientation:'portrait' });
+    placeContain(pdf, await captureNode(front, 4.85), paper);
+    if (back) { pdf.addPage(); placeContain(pdf, await captureNode(back, 4.85), paper); }
+    pdf.save(`cover-${themeKey}-${paper.label}.pdf`);
+  }
+  // KDP/Amazon: jede Print-Seite als eigene US-Letter-PDF-Datei (einzelne Downloads).
+  const KDP_PAGES = [['front', 'Cover'], ['back', 'Back Cover'], ['whatsinside', "What's Inside"]];
+  async function exportKDP() {
+    const base = exportBase(), paper = PDF_PAPERS.letter;
+    const { jsPDF } = window.jspdf;
+    for (const [fmt, lbl] of KDP_PAGES) {
+      const node = refs.current[fmt + '-' + themeKey]?.current;
+      if (!node) continue;
+      const pdf = new jsPDF({ unit:'mm', format:paper.jsFormat, orientation:'portrait' });
+      placeContain(pdf, await captureNode(node, 4.85), paper);
+      pdf.save(`${base} ${lbl} (US-Letter).pdf`);
+      await new Promise(r => setTimeout(r, 350)); // Browser-Download-Sperre vermeiden
+    }
   }
   async function exportAllPNG() {
     const base = exportBase();
@@ -1684,11 +1710,13 @@ function App() {
         </div>}
         <div className="sec">
           <div className="sec-t">Export</div>
-          <button className="btn" onClick={exportA4PDF}>A4-PDF (Front + Back)</button>
+          <button className="btn" onClick={() => exportPDF('a4')}>A4-PDF (Front + Back)</button>
+          <button className="btn sec-btn" onClick={() => exportPDF('letter')}>US-Letter-PDF (Front + Back)</button>
+          <button className="btn sec-btn" onClick={exportKDP}>KDP: Einzel-PDFs (US-Letter)</button>
           <button className="btn sec-btn" onClick={exportZIP}>Alle {allJobs.length} als ZIP</button>
           <button className="btn sec-btn" onClick={exportAllPNG}>Alle {allJobs.length} als PNG (einzeln)</button>
           <button className="btn sec-btn" onClick={exportWebClean}>Shop-Bilder (WebP, clean) als ZIP</button>
-          <div className="hint">Einzeln: „PNG"-Button über jedem Artboard. A4/ZIP werden in ~300 DPI gerendert (Shop-Assets 1:1 in {1080*2}px). Web-Export: alle ohne Badges, ~{WEB_MAX_EDGE}px Langkante als WebP.</div>
+          <div className="hint">Einzeln: „PNG"-Button über jedem Artboard. A4/US-Letter/ZIP werden in ~300 DPI gerendert (Shop-Assets 1:1 in {1080*2}px). US-Letter (für KDP/Amazon) wird zentriert eingepasst — schmale weiße Ränder statt Verzerrung. „KDP: Einzel-PDFs" lädt Cover, Back Cover und What's Inside als separate US-Letter-Dateien. Web-Export: alle ohne Badges, ~{WEB_MAX_EDGE}px Langkante als WebP.</div>
         </div>
         <div className="sec">
           <div className="sec-t">Projekt speichern / laden</div>
