@@ -7,7 +7,9 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Bagel+Fat+One&family=Fredoka:wght@400;600&family=Bungee&family=Mochiy+Pop+One&family=Caveat:wght@500;700&family=Cinzel+Decorative:wght@700&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
+  <!-- Schriften-Union aller Studio-Tools — gepflegt als FONT_FAMILIES in
+       99-resources/studio-design/src/tokens.js (dort ergänzen, dann hier spiegeln). -->
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=Space+Mono:wght@400;700&family=Bagel+Fat+One&family=Fredoka:wght@400;600&family=Bungee&family=Mochiy+Pop+One&family=Caveat:wght@500;700&family=Cinzel+Decorative:wght@700&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
 
   <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin="anonymous"></script>
@@ -15,6 +17,675 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+  <!-- Geteilte Themes/Paletten/Schriften/Muster — Quelle: 99-resources/studio-design/src/.
+       Der Block wird von sync.mjs geschrieben; hier drin nichts von Hand ändern. -->
+  <script>
+/* @studio-design:begin */
+/* ═══════════════════════════════════════════════════════════════════════════
+   GENERIERT von 99-resources/studio-design/sync.mjs — NICHT EDITIEREN.
+   Quelle: 99-resources/studio-design/src/{tokens.js, patterns.js, handoff.js}
+   Nach Änderungen dort:  node 99-resources/studio-design/sync.mjs
+═══════════════════════════════════════════════════════════════════════════ */
+/* ── tokens.js ─────────────────────────────────────────────── */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Studio Design — Tokens
+   Themes, Paletten und Schriften für alle Ria's-Colorlabs-Tools.
+   Reines Browser-JS, hängt alles an window.StudioDesign. Keine Abhängigkeiten.
+═══════════════════════════════════════════════════════════════════════════ */
+(function () {
+  const SD = (window.StudioDesign = window.StudioDesign || {});
+
+  /* ── Marken-Grundfarben ──────────────────────────────────────────────────── */
+  const BRAND = {
+    crimson: '#a4161a', gold: '#e38f14', dark: '#161a1d',
+    black: '#0b090a', light: '#f5f3f4', white: '#ffffff',
+  };
+  const withAlpha = (hex, a) => {
+    const m = /^#?([0-9a-f]{6})$/i.exec((hex || '').trim());
+    if (!m) return hex;
+    const n = parseInt(m[1], 16);
+    return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
+  };
+
+  /* ── Schriften ───────────────────────────────────────────────────────────
+     EINE Quelle für den Google-Fonts-Link. Wer eine Schrift ergänzt, ergänzt
+     sie hier — sync.mjs schreibt den <link> in alle Tools. */
+  const FONT_FAMILIES = [
+    'Anton',
+    'Archivo:wght@400;500;600;700;800',
+    'Instrument+Serif:ital@0;1',
+    'Space+Mono:wght@400;700',
+    'Bagel+Fat+One',
+    'Fredoka:wght@400;600',
+    'Bungee',
+    'Mochiy+Pop+One',
+    'Caveat:wght@500;700',
+    'Cinzel+Decorative:wght@700',
+    'Playfair+Display:ital,wght@0,700;1,400',
+  ];
+  const FONTS_HREF =
+    'https://fonts.googleapis.com/css2?' +
+    FONT_FAMILIES.map(f => 'family=' + f).join('&') +
+    '&display=swap';
+
+  const F = {
+    anton:    '"Anton","Helvetica Neue",Arial,sans-serif',
+    archivo:  '"Archivo",Helvetica,Arial,sans-serif',
+    bagel:    '"Bagel Fat One",sans-serif',
+    bungee:   '"Bungee",sans-serif',
+    mochiy:   '"Mochiy Pop One",sans-serif',
+    fredoka:  '"Fredoka",sans-serif',
+    caveat:   '"Caveat",cursive',
+    cinzel:   '"Cinzel Decorative",serif',
+    playfair: '"Playfair Display",serif',
+    instr:    '"Instrument Serif",serif',
+    mono:     '"Space Mono",monospace',
+    helv:     '"Helvetica Neue",Helvetica,Arial,sans-serif',
+  };
+
+  // Auswählbare Schriften in den Tool-Dropdowns. '' = Theme-Standard.
+  const FONT_OPTIONS = [
+    { v: '',           label: 'Theme-Standard' },
+    { v: F.anton,      label: 'Anton' },
+    { v: F.bagel,      label: 'Bagel Fat One' },
+    { v: F.bungee,     label: 'Bungee' },
+    { v: F.mochiy,     label: 'Mochiy Pop One' },
+    { v: F.fredoka,    label: 'Fredoka' },
+    { v: F.caveat,     label: 'Caveat (handschriftlich)' },
+    { v: F.cinzel,     label: 'Cinzel Decorative' },
+    { v: F.playfair,   label: 'Playfair Display' },
+    { v: F.instr,      label: 'Instrument Serif' },
+    { v: F.archivo,    label: 'Archivo' },
+    { v: F.mono,       label: 'Space Mono' },
+    { v: F.helv,       label: 'Helvetica (serifenlos)' },
+  ];
+
+  /* ── Sheet-Themes ────────────────────────────────────────────────────────
+     Das "Drumherum" für flächige Dokumente (Cloth Sheets, TCG-Karten).
+     Jedes Theme liefert ein Schrift-Trio + eine Tinten-Skala + Papierfarben.
+     Die Tools erzeugen daraus CSS-Klassen `.theme-<key>` (siehe sheetCSS()).
+
+       display  Überschriften / Titel
+       sans     Fließtext, Labels
+       mono     Eyebrows, Codes, Meta-Zeilen
+       title    Farbe der Haupt-Überschrift
+       ink      Primärtext   soft  Sekundärtext   faint  Tertiär
+       hair     Trennlinien / Hairlines
+       paper    Grundfläche  paperAlt  abgesetzte Fläche (z.B. Detail-Sheets)
+       accent   Vorschlag für die Akzentfarbe (übersteuerbar)
+       upper    Überschriften in Versalien
+       dark     Sheet ist dunkel → Tools schalten Kontraste um             */
+  const SHEET_THEMES = {
+    editorial: {
+      key: 'editorial', label: 'Editorial',
+      display: F.instr, sans: F.archivo, mono: F.mono,
+      title: '#1c1a17', ink: '#1c1a17', soft: '#76706a', faint: '#a9a39b', hair: '#e4ddd2',
+      paper: '#ffffff', paperAlt: '#f9f8f5', accent: '#8a7f6d',
+    },
+    colorlabs: {
+      key: 'colorlabs', label: 'Color Labs',
+      display: F.anton, sans: F.helv, mono: F.helv,
+      title: BRAND.crimson, ink: '#161a1d', soft: '#3f3f46', faint: '#777777', hair: '#f0eeef',
+      paper: '#ffffff', paperAlt: '#f7f5f6', accent: BRAND.gold, upper: true,
+    },
+    kids: {
+      key: 'kids', label: 'Kids',
+      display: F.bagel, sans: F.fredoka, mono: F.fredoka,
+      title: BRAND.crimson, ink: '#241f1c', soft: '#6d635c', faint: '#a89c93', hair: '#f0e3d6',
+      paper: '#fffdf8', paperAlt: '#fff4e6', accent: BRAND.gold,
+    },
+    anime: {
+      key: 'anime', label: 'Anime',
+      display: F.anton, sans: F.archivo, mono: F.mono,
+      title: '#ffffff', ink: '#f2efe9', soft: '#a9a39b', faint: '#6f6a64', hair: '#2c3238',
+      paper: '#161a1d', paperAlt: '#1d2226', accent: BRAND.gold, upper: true, dark: true,
+    },
+    fantasy: {
+      key: 'fantasy', label: 'Fantasy',
+      display: F.cinzel, sans: F.playfair, mono: F.mono,
+      title: '#f5e8c0', ink: '#f3ece0', soft: '#c8b89a', faint: '#8d7f66', hair: '#3b2326',
+      paper: '#2a0d10', paperAlt: '#351417', accent: '#c9a227', dark: true,
+    },
+    kawaii: {
+      key: 'kawaii', label: 'Kawaii',
+      display: F.bagel, sans: F.fredoka, mono: F.fredoka,
+      title: '#c2185b', ink: '#3a2430', soft: '#8a6273', faint: '#bb9aa7', hair: '#fbdcE8',
+      paper: '#fffafc', paperAlt: '#ffeef5', accent: '#ff6b9d',
+    },
+    standard: {
+      key: 'standard', label: 'Standard',
+      display: F.bagel, sans: F.fredoka, mono: F.mono,
+      title: '#6b3fa0', ink: '#221d2b', soft: '#6b6377', faint: '#a49bb0', hair: '#e7dff2',
+      paper: '#ffffff', paperAlt: '#faf7ff', accent: '#8b5fbf',
+    },
+    boldpop: {
+      key: 'boldpop', label: 'Bold Pop',
+      display: F.bungee, sans: F.mochiy, mono: F.mono,
+      title: '#1a1a2e', ink: '#1a1a2e', soft: '#5b5b74', faint: '#9b9bb0', hair: '#e2e2ee',
+      paper: '#ffffff', paperAlt: '#f4f4fb', accent: BRAND.gold, upper: true,
+    },
+    handmade: {
+      key: 'handmade', label: 'Handmade',
+      display: F.caveat, sans: F.caveat, mono: F.mono,
+      title: '#8b6914', ink: '#2f2a20', soft: '#7a6f5c', faint: '#aca08a', hair: '#e6dcc7',
+      paper: '#f5f0e8', paperAlt: '#fbf7ef', accent: '#c17e10',
+    },
+    prestige: {
+      key: 'prestige', label: 'Prestige',
+      display: F.cinzel, sans: F.playfair, mono: F.mono,
+      title: '#161a1d', ink: '#161a1d', soft: '#6b6459', faint: '#a49c8d', hair: '#e6dfd2',
+      paper: '#f8f5f0', paperAlt: '#fdfbf7', accent: '#e38f14',
+    },
+  };
+
+  /* CSS für alle Sheet-Themes. Die Tools injizieren das einmal in den <head>;
+     ein neues Theme braucht damit nur einen Eintrag oben, keinen CSS-Edit.
+     `scope` = Selektor-Präfixe, auf die die Vars gelegt werden. */
+  function sheetCSS(scope) {
+    const sel = scope || ['.sheet', '.card'];
+    return Object.keys(SHEET_THEMES).map(k => {
+      const t = SHEET_THEMES[k];
+      const heads = sel.map(s => `${s}.theme-${k}`).join(',');
+      const vars = [
+        `--sheet-display:${t.display}`, `--sheet-sans:${t.sans}`, `--sheet-mono:${t.mono}`,
+        `--sheet-title:${t.title}`, `--ink:${t.ink}`, `--soft:${t.soft}`,
+        `--faint:${t.faint}`, `--hair:${t.hair}`,
+        `--sheet-paper:${t.paper}`, `--sheet-paper-alt:${t.paperAlt}`,
+        `--sheet-accent:${t.accent}`,
+      ].join(';');
+      const upper = t.upper
+        ? `${sel.map(s => `${s}.theme-${k} h1,${s}.theme-${k} h2`).join(',')}{text-transform:uppercase;letter-spacing:.02em;}`
+        : '';
+      return `${heads}{${vars};}${upper}`;
+    }).join('\n');
+  }
+
+  /* ── Cover-Themes ────────────────────────────────────────────────────────
+     Das reichere Modell des Cover-Designers (Rahmen, Motive, Rückseiten-Copy).
+     Sheet-Tools brauchen davon nur `sheet` — den Schlüssel des passenden
+     SHEET_THEMES-Eintrags —, damit ein Buch und sein Cloth Sheet gleich aussehen. */
+  const COVER_THEMES = {
+    kids: { key: 'kids', sheet: 'kids', ground: BRAND.light, ink: BRAND.dark, eyebrow: 'Anime Coloring Book · Vol. 1',
+      eyebrowColor: BRAND.gold, titleColor: BRAND.crimson, accentColor: BRAND.gold, subColor: withAlpha(BRAND.black, 0.66),
+      frame: 'round', frameBg: BRAND.white, frameBorder: BRAND.dark, frameBorderW: 2, badgeBg: BRAND.gold, badgeColor: BRAND.dark,
+      motif: 'stars', motifColor: BRAND.gold, motifColor2: BRAND.crimson, watermark: withAlpha(BRAND.black, 0.3), authorOnDark: false,
+      back: { eyebrow: 'Inside', hook: ['Hours', 'full of color'],
+        pitch: 'Hand-drawn anime animals — a fox in cherry-blossom wind, a sleeping cat, a little dragon. Every page single-sided on heavy paper, clean lines and plenty of room to color.',
+        features: ['{n} motifs', 'Single-sided', 'Heavy paper'] } },
+    anime: { key: 'anime', sheet: 'anime', ground: BRAND.dark, ink: BRAND.light, eyebrow: 'Manga Lineart · Vol. 1',
+      eyebrowColor: BRAND.gold, titleColor: BRAND.white, accentColor: BRAND.gold, subColor: withAlpha(BRAND.white, 0.72),
+      frame: 'rect', frameBg: BRAND.light, frameBorder: BRAND.crimson, frameBorderW: 3, badgeBg: BRAND.crimson, badgeColor: BRAND.white,
+      motif: 'halftone', watermark: withAlpha(BRAND.white, 0.4), authorOnDark: true,
+      back: { eyebrow: 'Inside', hook: ['Your', 'lines.', 'Your colors.'],
+        pitch: 'Original manga scenes — heroes mid-leap, familiar companions, quiet ramen nights and neon skylines. Single-sided on heavy paper, ready for markers, fineliners and watercolor.',
+        features: ['{n} scenes', 'Single-sided', 'Heavy paper'] } },
+    fantasy: { key: 'fantasy', sheet: 'fantasy', ground: BRAND.crimson, ink: BRAND.light, eyebrow: 'Fantasy · Collected Edition',
+      eyebrowColor: BRAND.gold, titleColor: BRAND.white, accentColor: BRAND.gold, subColor: withAlpha(BRAND.white, 0.86),
+      frame: 'arch', frameBg: BRAND.light, frameBorder: BRAND.gold, frameBorderW: 2, badgeBg: BRAND.gold, badgeColor: BRAND.dark,
+      motif: 'sparkles', motifColor: BRAND.gold, motifColor2: withAlpha(BRAND.white, 0.85), watermark: withAlpha(BRAND.white, 0.5), authorOnDark: true,
+      back: { eyebrow: 'From the realm', hook: ['A kingdom', 'awaits', 'your colors'],
+        pitch: 'Hand-illustrated scenes — galloping unicorns, sleeping dragons, enchanted forests and crystal towers. Every page single-sided on premium paper, so your magic stays exactly where you put it.',
+        features: ['{n} motifs', 'Single-sided', 'Premium paper'] } },
+    kawaii: { key: 'kawaii', sheet: 'kawaii', ground: BRAND.white, ink: BRAND.dark, eyebrow: 'Kawaii · Chibi',
+      eyebrowColor: BRAND.crimson, titleColor: BRAND.crimson, accentColor: BRAND.gold, subColor: withAlpha(BRAND.black, 0.66),
+      frame: 'round', frameBg: BRAND.light, frameBorder: BRAND.dark, frameBorderW: 2, badgeBg: BRAND.gold, badgeColor: BRAND.dark,
+      motif: 'hearts', motifColor: BRAND.crimson, motifColor2: BRAND.gold, watermark: withAlpha(BRAND.black, 0.3), authorOnDark: false,
+      back: { eyebrow: 'Inside', hook: ['So much', 'cuteness'],
+        pitch: 'The cutest chibi characters to color — sleepy cats, sushi friends, mochi mascots and tiny dragons. Single-sided pages, soft lines, just enough detail. Happy coloring (＾▽＾)',
+        features: ['{n} motifs', 'Single-sided', 'Premium paper'] } },
+    colorlabs: { key: 'colorlabs', sheet: 'colorlabs', ground: BRAND.white, ink: BRAND.dark, eyebrow: 'Color Labs · Edition',
+      eyebrowColor: BRAND.gold, titleColor: BRAND.crimson, accentColor: BRAND.gold, subColor: withAlpha(BRAND.black, 0.66),
+      titleFont: F.anton, bodyFont: F.helv,
+      frame: 'rect', frameBg: BRAND.white, frameBorder: BRAND.dark, frameBorderW: 2, badgeBg: BRAND.dark, badgeColor: BRAND.white,
+      motif: 'stars', motifColor: BRAND.gold, motifColor2: BRAND.crimson, watermark: withAlpha(BRAND.black, 0.3), authorOnDark: false,
+      back: { eyebrow: 'Inside', hook: ['Your series,', 'your colors'],
+        pitch: 'Carefully drawn line art in the Color Labs style — clean outlines, plenty of room to color, printed single-sided on premium paper. Perfect for markers, colored pencils and fineliners.',
+        features: ['{n} motifs', 'Single-sided', 'Premium paper'] } },
+    standard: { key: 'standard', sheet: 'standard', ground: BRAND.white, ink: BRAND.dark, eyebrow: 'Coloring Book · Vol. 1',
+      eyebrowColor: '#6b3fa0', titleColor: '#6b3fa0', accentColor: '#8b5fbf', subColor: withAlpha(BRAND.black, 0.66),
+      titleFont: F.bagel, bodyFont: F.fredoka,
+      frame: 'round', frameBg: BRAND.white, frameBorder: '#6b3fa0', frameBorderW: 2, badgeBg: '#6b3fa0', badgeColor: BRAND.white,
+      motif: 'sparkles', motifColor: '#c8a4d4', motifColor2: '#6b3fa0', watermark: withAlpha(BRAND.black, 0.3), authorOnDark: false,
+      back: { eyebrow: 'Inside', hook: ['Color in', 'your world'],
+        pitch: 'A versatile collection of hand-drawn motifs to color — varied, cleanly drawn and printed single-sided on heavy paper. For relaxed hours with color.',
+        features: ['{n} motifs', 'Single-sided', 'Heavy paper'] } },
+    boldpop: { key: 'boldpop', sheet: 'boldpop', ground: BRAND.white, ink: BRAND.dark, eyebrow: 'Pop · Vol. 1',
+      eyebrowColor: BRAND.crimson, titleColor: '#1a1a2e', accentColor: BRAND.gold, subColor: withAlpha(BRAND.black, 0.66),
+      titleFont: F.bungee, bodyFont: F.mochiy,
+      frame: 'rect', frameBg: BRAND.light, frameBorder: '#1a1a2e', frameBorderW: 3, badgeBg: BRAND.crimson, badgeColor: BRAND.white,
+      motif: 'stars', motifColor: BRAND.gold, motifColor2: BRAND.crimson, watermark: withAlpha(BRAND.black, 0.3), authorOnDark: false,
+      back: { eyebrow: 'Inside', hook: ['Loud.', 'Bright.', 'Yours.'],
+        pitch: 'Punchy motifs with thick lines and maximum pop — made for vivid colors and bold combinations. Single-sided on heavy paper, ready for markers and pens.',
+        features: ['{n} motifs', 'Single-sided', 'Heavy paper'] } },
+    handmade: { key: 'handmade', sheet: 'handmade', ground: '#f5f0e8', ink: BRAND.dark, eyebrow: 'Handmade · Edition',
+      eyebrowColor: '#8b6914', titleColor: '#8b6914', accentColor: '#c17e10', subColor: withAlpha(BRAND.black, 0.66),
+      titleFont: F.caveat, bodyFont: F.caveat,
+      frame: 'round', frameBg: BRAND.white, frameBorder: '#8b6914', frameBorderW: 2, badgeBg: BRAND.crimson, badgeColor: BRAND.white,
+      motif: 'hearts', motifColor: '#c17e10', motifColor2: '#8b6914', watermark: withAlpha(BRAND.black, 0.3), authorOnDark: false,
+      back: { eyebrow: 'Inside', hook: ['Drawn with', 'love'],
+        pitch: 'Charming, hand-drawn motifs with warm character — every line set with love. Single-sided on natural-white paper, ideal for watercolor, colored pencils and quiet afternoons.',
+        features: ['{n} motifs', 'Single-sided', 'Natural paper'] } },
+    prestige: { key: 'prestige', sheet: 'prestige', ground: '#f8f5f0', ink: BRAND.dark, eyebrow: "Prestige · Collector's Edition",
+      eyebrowColor: '#e38f14', titleColor: '#161a1d', accentColor: '#e38f14', subColor: withAlpha(BRAND.black, 0.66),
+      titleFont: F.cinzel, bodyFont: F.playfair,
+      frame: 'arch', frameBg: BRAND.light, frameBorder: '#e38f14', frameBorderW: 2, badgeBg: BRAND.crimson, badgeColor: '#f5e8c0',
+      motif: 'diamonds', motifColor: '#e38f14', motifColor2: '#161a1d', watermark: withAlpha(BRAND.black, 0.3), authorOnDark: false,
+      back: { eyebrow: 'From the collection', hook: ['A world', 'in color'],
+        pitch: 'A refined collection of detailed motifs in an elegant presentation — set in classic typography, printed single-sided on premium paper. For discerning hours with color.',
+        features: ['{n} motifs', 'Single-sided', 'Premium paper'] } },
+  };
+
+  /* ── Farb-Paletten je Theme (5 editierbare Tokens) ───────────────────────── */
+  const PALETTE_PRESETS = {
+    kids: [
+      { name: 'Hell',         ground: '#f5f3f4', titleColor: '#a4161a', accentColor: '#e38f14', badgeBg: '#e38f14', badgeColor: '#161a1d' },
+      { name: 'Sky',          ground: '#b3e5fc', titleColor: '#01579b', accentColor: '#ff6f00', badgeBg: '#e53935', badgeColor: '#ffffff' },
+      { name: 'Mint',         ground: '#c8f5e4', titleColor: '#1b5e20', accentColor: '#ff7043', badgeBg: '#004d20', badgeColor: '#ffffff' },
+      { name: 'Cotton Candy', ground: '#ffe4f0', titleColor: '#880e4f', accentColor: '#e91e63', badgeBg: '#560027', badgeColor: '#ffffff' },
+    ],
+    anime: [
+      { name: 'Dunkel',    ground: '#161a1d', titleColor: '#ffffff', accentColor: '#e38f14', badgeBg: '#a4161a', badgeColor: '#ffffff' },
+      { name: 'Purple',    ground: '#0d0d2b', titleColor: '#ffffff', accentColor: '#ff00d4', badgeBg: '#c300ff', badgeColor: '#ffffff' },
+      { name: 'Red Storm', ground: '#1a0000', titleColor: '#ffffff', accentColor: '#ff6600', badgeBg: '#ffcc00', badgeColor: '#000000' },
+      { name: 'Cyber',     ground: '#050510', titleColor: '#00cc66', accentColor: '#ff005c', badgeBg: '#ffee00', badgeColor: '#000000' },
+    ],
+    fantasy: [
+      { name: 'Crimson',  ground: '#a4161a', titleColor: '#ffffff', accentColor: '#e38f14', badgeBg: '#e38f14', badgeColor: '#161a1d' },
+      { name: 'Midnight', ground: '#0d0d1a', titleColor: '#e8d5ff', accentColor: '#c9a227', badgeBg: '#7b00a0', badgeColor: '#ffffff' },
+      { name: 'Emerald',  ground: '#1a3d10', titleColor: '#f5e8c0', accentColor: '#c9a227', badgeBg: '#0d2008', badgeColor: '#f5e8c0' },
+      { name: 'Ice',      ground: '#0d3b6e', titleColor: '#ffffff', accentColor: '#a8d8f0', badgeBg: '#072244', badgeColor: '#ffffff' },
+    ],
+    kawaii: [
+      { name: 'Cherry',   ground: '#FFB8D6', titleColor: '#c2185b', accentColor: '#00897b', badgeBg: '#ff6b9d', badgeColor: '#ffffff' },
+      { name: 'Mint',     ground: '#c8f5e4', titleColor: '#00796b', accentColor: '#ff6b9d', badgeBg: '#004d40', badgeColor: '#ffffff' },
+      { name: 'Lavender', ground: '#ede0f7', titleColor: '#8b40c8', accentColor: '#e38f14', badgeBg: '#6b20a0', badgeColor: '#ffffff' },
+      { name: 'Peach',    ground: '#fff0e0', titleColor: '#e64a19', accentColor: '#ffb300', badgeBg: '#bf360c', badgeColor: '#ffffff' },
+    ],
+    colorlabs: [
+      { name: 'CI Crimson', ground: '#ffffff', titleColor: '#a4161a', accentColor: '#e38f14', badgeBg: '#161a1d', badgeColor: '#ffffff' },
+      { name: 'Hot Pink',   ground: '#ffffff', titleColor: '#ff1f7a', accentColor: '#e38f14', badgeBg: '#161a1d', badgeColor: '#ffffff' },
+      { name: 'Gold/Dark',  ground: '#ffffff', titleColor: '#161a1d', accentColor: '#e38f14', badgeBg: '#e38f14', badgeColor: '#161a1d' },
+      { name: 'Cyber Pop',  ground: '#0b0b14', titleColor: '#ff005c', accentColor: '#00e5cc', badgeBg: '#ffe600', badgeColor: '#0b0b14' },
+    ],
+    standard: [
+      { name: 'Lavender', ground: '#ffffff', titleColor: '#6b3fa0', accentColor: '#8b5fbf', badgeBg: '#6b3fa0', badgeColor: '#ffffff' },
+      { name: 'Ocean',    ground: '#f0f8ff', titleColor: '#0d47a1', accentColor: '#42a5f5', badgeBg: '#0d47a1', badgeColor: '#ffffff' },
+      { name: 'Forest',   ground: '#f2f8ee', titleColor: '#2d5a1b', accentColor: '#4a9f3f', badgeBg: '#1a3d10', badgeColor: '#ffffff' },
+      { name: 'Sunset',   ground: '#fff8f2', titleColor: '#c0392b', accentColor: '#e67e22', badgeBg: '#922b21', badgeColor: '#ffffff' },
+    ],
+    boldpop: [
+      { name: 'Dark Gold', ground: '#ffffff', titleColor: '#1a1a2e', accentColor: '#e38f14', badgeBg: '#a4161a', badgeColor: '#ffffff' },
+      { name: 'Neon',      ground: '#0a0a14', titleColor: '#ff2d9b', accentColor: '#00e5cc', badgeBg: '#ffe600', badgeColor: '#0a0a14' },
+      { name: 'Cobalt',    ground: '#f5f9ff', titleColor: '#1565c0', accentColor: '#f50057', badgeBg: '#0d47a1', badgeColor: '#ffffff' },
+      { name: 'Tropical',  ground: '#fff9e8', titleColor: '#e65100', accentColor: '#ffb300', badgeBg: '#bf360c', badgeColor: '#ffffff' },
+    ],
+    handmade: [
+      { name: 'Kraft', ground: '#f5f0e8', titleColor: '#8b6914', accentColor: '#c17e10', badgeBg: '#a4161a', badgeColor: '#ffffff' },
+      { name: 'Sage',  ground: '#f0f5ec', titleColor: '#3d6b50', accentColor: '#6aab7a', badgeBg: '#2a4d37', badgeColor: '#ffffff' },
+      { name: 'Rose',  ground: '#fdf5f5', titleColor: '#a0314a', accentColor: '#d46080', badgeBg: '#7a1a2e', badgeColor: '#ffffff' },
+      { name: 'Ink',   ground: '#f8f8f2', titleColor: '#2d2d2d', accentColor: '#8b4513', badgeBg: '#1a1a1a', badgeColor: '#f8f8f2' },
+    ],
+    prestige: [
+      { name: 'Dark Gold', ground: '#f8f5f0', titleColor: '#161a1d', accentColor: '#e38f14', badgeBg: '#a4161a', badgeColor: '#f5e8c0' },
+      { name: 'Navy',      ground: '#f8f8ff', titleColor: '#0d2461', accentColor: '#c9a227', badgeBg: '#061133', badgeColor: '#f5e8c0' },
+      { name: 'Emerald',   ground: '#f5f2ea', titleColor: '#1a3d10', accentColor: '#c9a227', badgeBg: '#0d2008', badgeColor: '#f5e8c0' },
+      { name: 'Burgundy',  ground: '#fdf8f5', titleColor: '#5c1a1a', accentColor: '#c9a227', badgeBg: '#3a0a0a', badgeColor: '#f5e8c0' },
+    ],
+    editorial: [
+      { name: 'Paper',   ground: '#ffffff', titleColor: '#1c1a17', accentColor: '#8a7f6d', badgeBg: '#1c1a17', badgeColor: '#ffffff' },
+      { name: 'Bone',    ground: '#f4f1ea', titleColor: '#2a251f', accentColor: '#9a8f78', badgeBg: '#2a251f', badgeColor: '#f4f1ea' },
+      { name: 'Slate',   ground: '#eef0f1', titleColor: '#26303a', accentColor: '#5f7182', badgeBg: '#26303a', badgeColor: '#ffffff' },
+      { name: 'Blush',   ground: '#faf3f1', titleColor: '#5a3b36', accentColor: '#b58275', badgeBg: '#5a3b36', badgeColor: '#faf3f1' },
+    ],
+  };
+
+  SD.BRAND = BRAND;
+  SD.withAlpha = withAlpha;
+  SD.FONT_FAMILIES = FONT_FAMILIES;
+  SD.FONTS_HREF = FONTS_HREF;
+  SD.FONT = F;
+  SD.FONT_OPTIONS = FONT_OPTIONS;
+  SD.SHEET_THEMES = SHEET_THEMES;
+  SD.sheetCSS = sheetCSS;
+  SD.COVER_THEMES = COVER_THEMES;
+  SD.PALETTE_PRESETS = PALETTE_PRESETS;
+})();
+
+/* ── patterns.js ─────────────────────────────────────────────── */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Studio Design — Patterns
+   EINE Definition pro Muster, zwei Backends:
+     • Canvas  → getiltes PNG-DataURL (synchron; html2canvas-sicher für Exporte)
+     • SVG     → Vektor-Markup (Download im Pattern-Generator, sharp-CLI)
+
+   Ein Muster ist eine Funktion (C, SW) → Ops-Liste, die EINE Kachel der
+   Kantenlänge C beschreibt. Ops sind bewusst primitiv, damit beide Renderer
+   sie ohne Sonderfälle abbilden können:
+
+     { k:'line',   x1,y1,x2,y2 }
+     { k:'rect',   x,y,w,h, fill:true }
+     { k:'circle', cx,cy,r, fill?:true }
+     { k:'path',   d, fill?:true, join?:'round' }
+     { k:'group',  tx,ty, rot, ops:[…] }        rot in Grad
+
+   Ohne `fill` wird gestrichelt … pardon: gestrichen (stroke) mit SW.
+═══════════════════════════════════════════════════════════════════════════ */
+(function () {
+  const SD = (window.StudioDesign = window.StudioDesign || {});
+
+  /* ── Pfad-Helfer ─────────────────────────────────────────────────────────── */
+  function polyPath(pts) {
+    return pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(2) + ' ' + p[1].toFixed(2)).join(' ') + ' Z';
+  }
+  function hex6path(cx, cy, r) {
+    const pts = [];
+    for (let i = 0; i < 6; i++) {
+      const a = (Math.PI / 3) * i - Math.PI / 6;
+      pts.push([cx + r * Math.cos(a), cy + r * Math.sin(a)]);
+    }
+    return polyPath(pts);
+  }
+  function star4path(cx, cy, R, r) {
+    const pts = [];
+    for (let i = 0; i < 8; i++) {
+      const a = (Math.PI / 4) * i - Math.PI / 2;
+      const rad = i % 2 === 0 ? R : r;
+      pts.push([cx + rad * Math.cos(a), cy + rad * Math.sin(a)]);
+    }
+    return polyPath(pts);
+  }
+  function petalPath(pw, ph) {
+    const f = n => n.toFixed(2);
+    return `M 0 0 C ${f(pw)} ${f(-ph * 0.33)} ${f(pw)} ${f(-ph * 0.67)} 0 ${f(-ph)} ` +
+           `C ${f(-pw)} ${f(-ph * 0.67)} ${f(-pw)} ${f(-ph * 0.33)} 0 0`;
+  }
+
+  /* ── Register ────────────────────────────────────────────────────────────
+     group 'basic' = dezente Flächenraster (früher Cover-Designer)
+     group 'motif' = figürliche Muster (früher Malbuch-Pattern-Generator)
+     cell/stroke = Vorgaben; die UIs dürfen beides übersteuern.              */
+  const PATTERNS = {
+    /* — basic — */
+    dots: { label: 'Punkte', group: 'basic', cell: 22, stroke: 1,
+      ops: C => [{ k: 'circle', cx: C / 2, cy: C / 2, r: C * 0.22, fill: true }] },
+    grid: { label: 'Raster', group: 'basic', cell: 22, stroke: 1,
+      ops: C => [{ k: 'line', x1: 0.5, y1: 0, x2: 0.5, y2: C }, { k: 'line', x1: 0, y1: 0.5, x2: C, y2: 0.5 }] },
+    plus: { label: 'Plus', group: 'basic', cell: 22, stroke: 2,
+      ops: C => [{ k: 'line', x1: C / 2, y1: 0, x2: C / 2, y2: C }, { k: 'line', x1: 0, y1: C / 2, x2: C, y2: C / 2 }] },
+    diag: { label: 'Diagonal', group: 'basic', cell: 22, stroke: 1.5,
+      ops: C => [{ k: 'line', x1: 0, y1: C, x2: C, y2: 0 }] },
+    cross: { label: 'Schraffur', group: 'basic', cell: 22, stroke: 1,
+      ops: C => [{ k: 'line', x1: 0, y1: C, x2: C, y2: 0 }, { k: 'line', x1: 0, y1: 0, x2: C, y2: C }] },
+    vstripe: { label: 'Streifen', group: 'basic', cell: 22, stroke: 1,
+      ops: C => [{ k: 'rect', x: 0, y: 0, w: Math.max(2, C * 0.28), h: C, fill: true }] },
+    checker: { label: 'Schachbrett', group: 'basic', cell: 22, stroke: 1,
+      ops: C => [{ k: 'rect', x: 0, y: 0, w: C / 2, h: C / 2, fill: true },
+                 { k: 'rect', x: C / 2, y: C / 2, w: C / 2, h: C / 2, fill: true }] },
+
+    /* — motif — */
+    'neon-grid': { label: 'Neon Grid', group: 'motif', cell: 60, stroke: 1,
+      ops: C => [{ k: 'path', d: `M ${C} 0 L 0 0 0 ${C}` }] },
+    'star-scatter': { label: 'Sterne', group: 'motif', cell: 80, stroke: 1.2,
+      ops: C => [{ k: 'path', d: star4path(C / 2, C / 2, C * 0.36, C * 0.14), join: 'round' }] },
+    'lightning-repeat': { label: 'Blitz', group: 'motif', cell: 90, stroke: 1.5,
+      ops: C => {
+        const p = f => (f * C).toFixed(2);
+        return [{ k: 'path', join: 'round',
+          d: `M ${p(0.60)} ${p(0.02)} L ${p(0.28)} ${p(0.02)} L ${p(0.10)} ${p(0.50)} L ${p(0.40)} ${p(0.50)} ` +
+             `L ${p(0.18)} ${p(0.98)} L ${p(0.28)} ${p(0.98)} L ${p(0.58)} ${p(0.52)} L ${p(0.28)} ${p(0.52)} Z` }];
+      } },
+    'dot-halftone': { label: 'Punkte (offen)', group: 'motif', cell: 50, stroke: 1.2,
+      ops: C => [{ k: 'circle', cx: C / 2, cy: C / 2, r: C * 0.30 }] },
+    'sakura-geo': { label: 'Sakura', group: 'motif', cell: 90, stroke: 1,
+      ops: C => {
+        const ph = C * 0.37, pw = C * 0.13, rc = C * 0.065;
+        const petals = [];
+        for (let i = 0; i < 5; i++) {
+          petals.push({ k: 'group', tx: 0, ty: 0, rot: i * 72, ops: [{ k: 'path', d: petalPath(pw, ph), join: 'round' }] });
+        }
+        petals.push({ k: 'circle', cx: 0, cy: 0, r: rc });
+        return [{ k: 'group', tx: C / 2, ty: C / 2, rot: 0, ops: petals }];
+      } },
+    'hexagon-bloom': { label: 'Hex Bloom', group: 'motif', cell: 70, stroke: 1,
+      ops: C => {
+        const R = C * 0.42, Ri = C * 0.20, out = [
+          { k: 'path', d: hex6path(C / 2, C / 2, R) },
+          { k: 'path', d: hex6path(C / 2, C / 2, Ri) },
+        ];
+        for (let i = 0; i < 6; i++) {
+          const a = (Math.PI / 3) * i - Math.PI / 6;
+          out.push({ k: 'line',
+            x1: C / 2 + Ri * Math.cos(a), y1: C / 2 + Ri * Math.sin(a),
+            x2: C / 2 + R * Math.cos(a),  y2: C / 2 + R * Math.sin(a) });
+        }
+        return out;
+      } },
+    'diamond-lattice': { label: 'Diamant', group: 'motif', cell: 60, stroke: 1,
+      ops: C => [{ k: 'path', d: `M ${C / 2} 0 L ${C} ${C / 2} L ${C / 2} ${C} L 0 ${C / 2} Z` }] },
+    'paw-scatter': { label: 'Pfoten', group: 'motif', cell: 90, stroke: 1.2,
+      ops: C => {
+        const out = [{ k: 'circle', cx: C * 0.50, cy: C * 0.60, r: C * 0.20 }];
+        [[0.28, 0.28], [0.50, 0.20], [0.72, 0.28]].forEach(([tx, ty]) =>
+          out.push({ k: 'circle', cx: C * tx, cy: C * ty, r: C * 0.09 }));
+        return out;
+      } },
+  };
+
+  const keys = group => Object.keys(PATTERNS).filter(k => !group || PATTERNS[k].group === group);
+
+  /* ── Canvas-Backend ──────────────────────────────────────────────────────
+     Rastert eine Kachel als PNG-DataURL. Supersampling, weil html2canvas beim
+     300-DPI-Export hochskaliert und 1:1-Tiles dabei ausfransen. Ergebnis wird
+     gecacht — Preview und Export nutzen exakt dasselbe Tile (WYSIWYG). */
+  const SS = 4;
+  const _cache = {};
+
+  function drawOps(ctx, ops, sw) {
+    ops.forEach(o => {
+      if (o.k === 'group') {
+        ctx.save();
+        ctx.translate(o.tx || 0, o.ty || 0);
+        if (o.rot) ctx.rotate((o.rot * Math.PI) / 180);
+        drawOps(ctx, o.ops, sw);
+        ctx.restore();
+        return;
+      }
+      ctx.lineWidth = sw;
+      ctx.lineJoin = o.join === 'round' ? 'round' : 'miter';
+      ctx.beginPath();
+      if (o.k === 'line') { ctx.moveTo(o.x1, o.y1); ctx.lineTo(o.x2, o.y2); ctx.stroke(); return; }
+      if (o.k === 'rect') { ctx.fillRect(o.x, o.y, o.w, o.h); return; }
+      if (o.k === 'circle') {
+        ctx.arc(o.cx, o.cy, o.r, 0, Math.PI * 2);
+        o.fill ? ctx.fill() : ctx.stroke();
+        return;
+      }
+      if (o.k === 'path') {
+        const p = new Path2D(o.d);
+        o.fill ? ctx.fill(p) : ctx.stroke(p);
+      }
+    });
+  }
+
+  // → DataURL einer Kachel, oder null bei unbekanntem Key.
+  function tileDataURL(key, opts) {
+    const p = PATTERNS[key];
+    if (!p) return null;
+    const o = opts || {};
+    const C = o.cell || p.cell;
+    const color = o.color || 'rgba(0,0,0,0.06)';
+    const sw = o.stroke != null ? o.stroke : p.stroke;
+    const ck = `${key}|${C}|${color}|${sw}`;
+    if (_cache[ck]) return _cache[ck];
+
+    const cv = document.createElement('canvas');
+    cv.width = Math.max(1, Math.round(C * SS));
+    cv.height = cv.width;
+    const ctx = cv.getContext('2d');
+    ctx.scale(SS, SS);
+    ctx.fillStyle = color;
+    ctx.strokeStyle = color;
+    drawOps(ctx, p.ops(C), sw);
+    return (_cache[ck] = cv.toDataURL('image/png'));
+  }
+
+  // Fertige React/DOM-Styles für ein Kachel-Overlay.
+  function tileStyle(key, opts) {
+    const uri = tileDataURL(key, opts);
+    if (!uri) return null;
+    const C = (opts && opts.cell) || PATTERNS[key].cell;
+    return { backgroundImage: `url(${uri})`, backgroundRepeat: 'repeat', backgroundSize: `${C}px ${C}px` };
+  }
+
+  /* ── SVG-Backend ─────────────────────────────────────────────────────────── */
+  function svgOps(ops, sw, color) {
+    return ops.map(o => {
+      if (o.k === 'group') {
+        const tr = `translate(${(o.tx || 0).toFixed(2)},${(o.ty || 0).toFixed(2)})` + (o.rot ? ` rotate(${o.rot})` : '');
+        return `<g transform="${tr}">${svgOps(o.ops, sw, color)}</g>`;
+      }
+      const paint = o.fill ? `fill="${color}"` : `fill="none" stroke="${color}" stroke-width="${sw}"`;
+      const join = o.join === 'round' ? ' stroke-linejoin="round"' : '';
+      if (o.k === 'line') return `<line x1="${o.x1.toFixed(2)}" y1="${o.y1.toFixed(2)}" x2="${o.x2.toFixed(2)}" y2="${o.y2.toFixed(2)}" stroke="${color}" stroke-width="${sw}"/>`;
+      if (o.k === 'rect') return `<rect x="${o.x.toFixed(2)}" y="${o.y.toFixed(2)}" width="${o.w.toFixed(2)}" height="${o.h.toFixed(2)}" fill="${color}"/>`;
+      if (o.k === 'circle') return `<circle cx="${o.cx.toFixed(2)}" cy="${o.cy.toFixed(2)}" r="${o.r.toFixed(2)}" ${paint}${join}/>`;
+      if (o.k === 'path') return `<path d="${o.d}" ${paint}${join}/>`;
+      return '';
+    }).join('');
+  }
+
+  // Vollständiges SVG-Dokument, W×H mit gekachetem Muster gefüllt.
+  function patternSVG(key, W, H, opts) {
+    const p = PATTERNS[key];
+    if (!p) return null;
+    const o = opts || {};
+    const C = o.cell || p.cell;
+    const sw = o.stroke != null ? o.stroke : p.stroke;
+    const color = o.color || '#000000';
+    const id = 'sd-' + key.replace(/[^a-z0-9]/gi, '');
+    const inner = svgOps(p.ops(C), sw, color);
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">` +
+      `<defs><pattern id="${id}" x="0" y="0" width="${C}" height="${C}" patternUnits="userSpaceOnUse">${inner}</pattern></defs>` +
+      `<rect width="${W}" height="${H}" fill="url(#${id})"/></svg>`;
+  }
+
+  SD.PATTERNS = PATTERNS;
+  SD.patternKeys = keys;
+  SD.tileDataURL = tileDataURL;
+  SD.tileStyle = tileStyle;
+  SD.patternSVG = patternSVG;
+  SD.patternOps = (key, C) => (PATTERNS[key] ? PATTERNS[key].ops(C || PATTERNS[key].cell) : null);
+})();
+
+/* ── handoff.js ─────────────────────────────────────────────── */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Studio Design — Handoff
+   Presets zwischen den Tools austauschen, ohne Server und ohne gemeinsamen
+   Origin: übertragen wird nicht das gerenderte Bild, sondern die Parameter.
+   Jedes Tool rendert daraus selbst in seiner eigenen Auflösung — der Cover-
+   Designer in 300 DPI, Cloth Sheet mit Export-Scale 3, der Generator als SVG.
+
+   Transport ist die Zwischenablage. Die funktioniert auch unter file://, wo
+   localStorage zwischen den Tools getrennt ist (jede Datei = eigener Origin).
+
+     const preset = { kind:'pattern', pattern:'sakura-geo', cell:90, … };
+     await StudioDesign.Handoff.copy(preset);      // im Generator
+     const p = await StudioDesign.Handoff.paste(); // im Ziel-Tool
+═══════════════════════════════════════════════════════════════════════════ */
+(function () {
+  const SD = (window.StudioDesign = window.StudioDesign || {});
+
+  const MAGIC = 'STUDIO-PRESET';
+  const VERSION = 1;
+
+  function encode(preset) {
+    return `${MAGIC} v${VERSION} ` + JSON.stringify(preset);
+  }
+
+  // Toleranter Parser: akzeptiert die Hülle, nacktes JSON und Text mit Umbrüchen
+  // drumherum (Zwischenablagen aus Editoren hängen gern Whitespace an).
+  function decode(text) {
+    if (!text) return null;
+    let s = String(text).trim();
+    const m = new RegExp('^' + MAGIC + '\\s+v(\\d+)\\s+').exec(s);
+    if (m) {
+      if (Number(m[1]) > VERSION) return null; // neueres Format — nicht raten
+      s = s.slice(m[0].length);
+    }
+    if (s[0] !== '{') return null;
+    try {
+      const p = JSON.parse(s);
+      return p && typeof p === 'object' && p.kind ? p : null;
+    } catch (e) { return null; }
+  }
+
+  /* ── Zwischenablage ──────────────────────────────────────────────────────
+     navigator.clipboard braucht einen Secure Context und eine User-Geste;
+     beides ist bei einem Button-Klick gegeben, aber unter file:// zickt
+     Chrome je nach Version. Darum der execCommand-Fallback. */
+  async function writeText(text) {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+    } catch (e) { /* Fallback unten */ }
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0;';
+      document.body.appendChild(ta);
+      ta.select();
+      const ok = document.execCommand('copy');
+      ta.remove();
+      return ok;
+    } catch (e) { return false; }
+  }
+
+  async function readText() {
+    try {
+      if (navigator.clipboard && navigator.clipboard.readText) {
+        return await navigator.clipboard.readText();
+      }
+    } catch (e) { /* Fallback unten */ }
+    // Kein Leserecht → den Nutzer einfügen lassen.
+    return window.prompt('Preset hier einfügen (Strg+V):', '') || '';
+  }
+
+  async function copy(preset) { return writeText(encode(preset)); }
+
+  async function paste() { return decode(await readText()); }
+
+  /* ── Preset-Konstruktoren ────────────────────────────────────────────────
+     Nur Felder, die jedes Ziel-Tool auch versteht. `kind` entscheidet, welche
+     Sektion ein Tool beim Einfügen befüllt. */
+  const pattern = o => ({
+    kind: 'pattern', pattern: o.pattern, cell: o.cell, stroke: o.stroke,
+    opacity: o.opacity, color: o.color || null, auto: o.auto !== false,
+  });
+  const theme = o => ({
+    kind: 'theme', theme: o.theme,
+    fonts: o.fonts || null, colors: o.colors || null,
+  });
+  const palette = o => ({ kind: 'palette', colors: o.colors, name: o.name || '' });
+
+  // Kurzbeschreibung fürs UI ("Eingefügt: Muster sakura-geo").
+  function describe(p) {
+    if (!p) return '';
+    if (p.kind === 'pattern') return `Muster ${p.pattern}`;
+    if (p.kind === 'theme') return `Theme ${p.theme}`;
+    if (p.kind === 'palette') return `Palette (${(p.colors || []).length} Farben)`;
+    return p.kind;
+  }
+
+  SD.Handoff = { MAGIC, VERSION, encode, decode, copy, paste, writeText, readText, describe, make: { pattern, theme, palette } };
+})();
+/* @studio-design:end */
+  </script>
 
   <style>
     :root {
@@ -28,25 +699,84 @@
 
     .app { display:flex; flex-direction:column; height:100%; }
     .app-header {
-      background:var(--dark); color:var(--light); padding:14px 24px;
-      display:flex; align-items:baseline; gap:14px; flex-shrink:0;
+      background:var(--dark); color:var(--light); padding:10px 18px;
+      display:flex; align-items:center; gap:12px; flex-shrink:0; flex-wrap:wrap;
     }
-    .app-header h1 { font-family:'Anton',sans-serif; font-size:1.5rem; text-transform:uppercase; letter-spacing:.5px; font-weight:400; }
+    .app-header h1 { font-family:'Anton',sans-serif; font-size:1.25rem; text-transform:uppercase; letter-spacing:.5px;
+                     font-weight:400; white-space:nowrap; }
     .app-header h1 .ac { color:var(--crimson); }
-    .app-header .sub { font-size:.7rem; letter-spacing:.22em; text-transform:uppercase; color:var(--gold); }
-    .app-body { display:flex; flex:1; overflow:hidden; }
+    .app-header h1 .v { font-size:.7rem; opacity:.5; }
+    /* Ansicht-Tabs: Design ↔ Base Infos */
+    .tabs { display:flex; gap:4px; }
+    .tabs button { padding:7px 14px; border:1px solid var(--line); border-radius:6px; background:#23292e;
+                   color:var(--muted); font-weight:700; font-size:.76rem; cursor:pointer; font-family:inherit;
+                   transition:.12s; white-space:nowrap; }
+    .tabs button:hover { border-color:var(--gold); }
+    .tabs button.on { background:var(--gold); border-color:var(--gold); color:var(--dark); }
+    /* Button-Gruppen in der Kopfleiste (Export / Projekt) */
+    .hgrp { display:flex; align-items:center; gap:5px; padding:4px 8px; border:1px solid var(--line);
+            border-radius:8px; background:#191e22; }
+    .hgrp-l { font-size:.58rem; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); }
+    .hbtn { padding:6px 10px; border:1px solid var(--line); border-radius:5px; background:#23292e; color:var(--light);
+            font-weight:700; font-size:.72rem; cursor:pointer; font-family:inherit; transition:.12s; white-space:nowrap; }
+    .hbtn:hover:not(:disabled) { border-color:var(--gold); color:var(--gold); }
+    .hbtn.primary { background:linear-gradient(135deg,var(--crimson),var(--gold)); border-color:transparent; color:#fff; }
+    .hbtn.primary:hover:not(:disabled) { filter:brightness(1.07); color:#fff; }
+    .hbtn:disabled { opacity:.45; cursor:default; }
+    .header-tools { margin-left:auto; display:flex; align-items:center; gap:12px; }
+    .busy { font-size:.72rem; color:var(--gold); white-space:nowrap; }
+    .header-mode { display:flex; gap:4px; }
+    .header-mode button { padding:6px 14px; border:1px solid var(--line); border-radius:6px; background:#23292e;
+                          color:var(--muted); font-weight:700; font-size:.74rem; cursor:pointer; font-family:inherit; transition:.12s; }
+    .header-mode button:hover { border-color:var(--gold); }
+    .header-mode button.on { background:linear-gradient(135deg,var(--crimson),var(--gold)); border-color:transparent; color:#fff; }
+
+    /* Ansichten: nur die aktive liegt im Layout. Die inaktive bleibt off-screen gemountet,
+       damit ihre Artboards für den Export gerendert bleiben. */
+    .view { display:flex; flex:1; min-height:0; overflow:hidden; }
+    .view:not(.on) { position:fixed; left:-100000px; top:0; width:1600px; height:900px; flex:none; }
+    .view-base { display:block; overflow:auto; background:var(--panel); color:var(--light); padding:18px 22px 40px; }
+    .base-head { display:flex; align-items:center; gap:12px; margin-bottom:10px; }
+    .base-head h2 { font-family:'Anton',sans-serif; font-weight:400; font-size:1.1rem; text-transform:uppercase; letter-spacing:.08em; }
+    .base-head .bi-sub { font-size:.72rem; color:var(--muted); }
+    .base-copy { margin-left:auto; padding:7px 16px; border:1px solid var(--gold); border-radius:6px;
+                 background:transparent; color:var(--gold); font-weight:700; font-size:.74rem; cursor:pointer;
+                 font-family:inherit; transition:.12s; }
+    .base-copy:hover { background:var(--gold); color:var(--dark); }
+    .base-note { padding:10px 14px; background:#20252a; border:1px solid var(--line); border-radius:8px;
+                 font-size:.72rem; line-height:1.5; color:var(--muted); margin-bottom:14px; }
+    .base-note code { background:rgba(227,143,20,.14); color:var(--gold); padding:0 4px; border-radius:3px; }
+    .base-body { display:grid; grid-template-columns:minmax(0,1fr) 360px; gap:20px; align-items:start; }
+    .base-fields { display:grid; grid-template-columns:repeat(auto-fill,minmax(340px,1fr)); gap:14px; align-items:start; min-width:0; }
+    .base-previews { display:flex; flex-direction:column; gap:14px; }
+    .base-previews .board-stage { background:var(--stage); }
+    @media (max-width:1180px) { .base-body { grid-template-columns:1fr; } }
 
     /* panel */
     .panel { width:308px; flex-shrink:0; overflow-y:auto; background:var(--panel); color:var(--light);
              padding:14px; display:flex; flex-direction:column; gap:12px; }
+    .panel-h { position:sticky; top:-14px; z-index:3; margin:-14px -14px 0; padding:12px 14px 9px; background:var(--panel);
+               border-bottom:1px solid var(--line); font-family:'Anton',sans-serif; font-size:.76rem; letter-spacing:.16em;
+               text-transform:uppercase; color:var(--gold); }
+    .panel-h span { display:block; font-family:inherit; font-size:.62rem; letter-spacing:.06em; text-transform:none; color:var(--muted); margin-top:2px; }
     .sec { border:1px solid var(--line); border-radius:8px; padding:12px; display:flex; flex-direction:column; gap:9px; }
     .sec-t { font-family:'Anton',sans-serif; font-weight:400; font-size:.72rem; text-transform:uppercase;
              letter-spacing:.12em; color:var(--muted); }
-    .themes { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
-    .theme-btn { padding:9px 6px; border:1px solid var(--line); border-radius:6px; background:#23292e; color:var(--light);
-                 font-size:.78rem; font-weight:700; cursor:pointer; transition:.12s; text-transform:capitalize; }
-    .theme-btn:hover { border-color:var(--gold); }
-    .theme-btn.on { background:linear-gradient(135deg,var(--crimson),var(--gold)); border-color:transparent; }
+    .themes { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .theme-btn { position:relative; padding:0; border:2px solid var(--line); border-radius:8px; overflow:hidden;
+                 background:none; cursor:pointer; transition:.12s; }
+    .theme-btn:hover:not(.on) { border-color:var(--muted); }
+    .theme-btn.on { border-color:var(--gold); box-shadow:0 0 0 1px var(--gold); }
+    .theme-prev { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px;
+                  height:74px; padding:8px 6px; }
+    .theme-prev-frame { width:30px; height:22px; flex:none; }
+    .theme-prev-title { max-width:100%; font-weight:800; font-size:.6rem; line-height:1; letter-spacing:.02em;
+                        overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .theme-prev-dots { display:flex; gap:3px; }
+    .theme-prev-dot { width:8px; height:8px; border-radius:50%; border:1px solid rgba(0,0,0,.18); }
+    .theme-name { display:block; padding:4px 2px; font-size:.72rem; font-weight:700; text-transform:capitalize;
+                  text-align:center; background:#23292e; color:var(--light); }
+    .theme-btn.on .theme-name { background:linear-gradient(135deg,var(--crimson),var(--gold)); }
     .row { display:flex; flex-direction:column; gap:4px; }
     .row label { font-size:.7rem; letter-spacing:.04em; color:var(--muted); text-transform:uppercase; }
     .row input[type=text], .row input[type=number], .row textarea {
@@ -54,6 +784,9 @@
       padding:7px 9px; font-size:.82rem; font-family:inherit; width:100%;
     }
     .row textarea { resize:vertical; min-height:54px; }
+    /* Feldbreiten: kurze Eingaben bekommen kurze Felder (w-s ≈ ein Wort, w-m ≈ eine Zeile). */
+    .row.w-s input, .row.w-s select { max-width:150px; }
+    .row.w-m input, .row.w-m select { max-width:270px; }
     .row input[type=file] { font-size:.72rem; color:var(--muted); }
     .row input:focus, .row textarea:focus { outline:none; border-color:var(--gold); }
     .check { display:flex; align-items:center; gap:8px; font-size:.8rem; cursor:pointer; }
@@ -85,8 +818,8 @@
     .color-cell { display:flex; gap:6px; align-items:center; font-size:.72rem; color:var(--muted); }
     .color-cell input[type=color] { width:30px; height:24px; border:1px solid var(--line); border-radius:4px; padding:0; cursor:pointer; background:none; }
 
-    .drop { display:flex; align-items:center; justify-content:center; text-align:center; min-height:40px; padding:8px 6px;
-            border:1.5px dashed var(--line); border-radius:6px; cursor:pointer; font-size:.72rem; color:var(--muted);
+    .drop { display:flex; align-items:center; justify-content:center; text-align:center; min-height:54px; padding:10px 6px;
+            border:1.5px dashed var(--line); border-radius:6px; cursor:pointer; font-size:.76rem; color:var(--muted);
             transition:.12s; word-break:break-word; }
     .drop:hover { border-color:var(--gold); color:var(--light); }
     .drop.over { border-color:var(--gold); background:#23292e; color:var(--light); }
@@ -95,15 +828,50 @@
     .resizer { width:6px; flex-shrink:0; cursor:col-resize; background:var(--line); transition:background .12s; }
     .resizer:hover { background:var(--gold); }
 
+    /* Bild-Leiste über der Vorschau: alle Drop-Slots des aktiven Themes in drei Spalten. */
+    .imagebar { background:#fff; border:1px solid #ddd8d2; border-radius:10px; padding:10px 12px 12px; }
+    .ib-head { display:flex; align-items:baseline; gap:10px; cursor:pointer; user-select:none; }
+    .ib-head .t { font-family:'Anton',sans-serif; font-size:.82rem; letter-spacing:.1em; text-transform:uppercase; color:var(--dark); }
+    .ib-head .c { font-size:.7rem; color:#8a827a; }
+    .ib-head .x { margin-left:auto; font-size:.72rem; font-weight:700; color:#8a827a; }
+    .ib-cols { display:flex; flex-wrap:wrap; gap:24px; margin-top:10px; }
+    .ib-col { min-width:0; }
+    .ib-t { font-size:.62rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:#8a827a; margin-bottom:6px; }
+    .ib-grid { display:grid; gap:6px; }
+    .ib-grid.c1 { grid-template-columns:1fr; width:168px; }
+    .ib-grid.c4 { grid-template-columns:repeat(4,84px); }
+    .ib-pair { display:grid; gap:4px; }
+    .ib-pair .pl { font-size:.6rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:#a09a92; text-align:center; }
+    .ib-foot { display:flex; align-items:flex-end; gap:14px; margin-top:10px; padding-top:10px;
+               border-top:1px solid #ece8e3; flex-wrap:wrap; }
+    .ib-set { display:flex; flex-direction:column; gap:3px; }
+    .ib-set label { font-size:.62rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:#8a827a; }
+    .ib-set select { background:#fff; border:1px solid #d7d2cc; border-radius:5px; padding:6px 8px;
+                     font-size:.76rem; font-family:inherit; color:#333; cursor:pointer; }
+    .ib-btn { font-size:.72rem; font-weight:700; padding:7px 12px; border:1px solid #d7d2cc; border-radius:5px;
+              background:#fff; cursor:pointer; color:#333; font-family:inherit; }
+    .ib-btn:hover { border-color:var(--gold); color:var(--crimson); }
+    .ib-foot .hint { color:#8a827a; max-width:340px; }
+    .imagebar .drop { min-height:40px; padding:6px 4px; font-size:.66rem; line-height:1.25;
+                      border-color:#d7d2cc; color:#8a827a; background:#fbfaf9; }
+    .imagebar .drop:hover, .imagebar .drop.over { border-color:var(--gold); color:#333; background:#fff8ee; }
+    .imagebar .drop.filled { border-style:solid; border-color:var(--gold); color:#333; background:#fff; }
+
     /* stage */
-    .stage { flex:1; overflow:auto; padding:26px; display:flex; flex-direction:column; gap:16px; }
+    .stage { flex:1; overflow:auto; padding:20px 26px 26px; display:flex; flex-direction:column; gap:16px; }
     .stage-bar { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
     .stage-bar .zl { font-size:.72rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:#7c756c; margin-right:4px; }
     .zoom-btn { font-size:.72rem; font-weight:700; padding:5px 11px; border:1px solid #d7d2cc; border-radius:5px;
                 background:#fff; cursor:pointer; color:#444; }
     .zoom-btn:hover { border-color:var(--gold); }
     .zoom-btn.on { background:var(--dark); color:#fff; border-color:var(--dark); }
-    .boards { display:flex; flex-wrap:wrap; gap:26px; align-items:flex-start; }
+    .boards { display:flex; flex-direction:column; gap:22px; }
+    .board-group { display:flex; flex-direction:column; gap:12px; }
+    .board-group-head { display:flex; align-items:baseline; gap:10px; }
+    .board-group-head .g-t { font-family:'Anton',sans-serif; font-size:.9rem; text-transform:uppercase; letter-spacing:.1em; color:var(--dark); }
+    .board-group-head .g-sub { font-size:.7rem; letter-spacing:.06em; color:#8a827a; }
+    .board-row { display:flex; flex-wrap:wrap; gap:26px; align-items:flex-start; }
+    .board-divider { height:0; border-top:2px dashed #d7d2cc; margin:2px 0; }
     .board { background:#fff; border-radius:10px; box-shadow:0 6px 20px rgba(0,0,0,.12); overflow:hidden; }
     .board-head { display:flex; align-items:center; justify-content:space-between; gap:10px;
                   padding:8px 12px; background:#fff; border-bottom:1px solid #ece8e3; }
@@ -154,6 +922,8 @@ async function serializeImages(imagesByTheme) {
       hero:    await urlToDataURL(v.hero),
       heroPBN: await urlToDataURL(v.heroPBN),
       pages:   await Promise.all((v.pages || []).map(urlToDataURL)),
+      baLine:  await Promise.all((v.baLine  || []).map(urlToDataURL)),
+      baColor: await Promise.all((v.baColor || []).map(urlToDataURL)),
     };
   }
   return out;
@@ -166,6 +936,9 @@ const BRAND = {
 };
 const ANTON = '"Anton","Helvetica Neue",Arial,sans-serif';
 const SANS = '"Helvetica Neue",Helvetica,Arial,sans-serif';
+// Print-Seitenformat der Front/Back/What's-Inside-Artboards. US-Letter (8.5×11) → 630×815
+// (630 × 279.4/215.9). Der Letter-PDF-Export füllt damit randlos; A4 wird zentriert eingepasst.
+const PAGE_W = 630, PAGE_H = 815;
 
 function splitTitle(title) {
   const words = String(title || '').trim().split(/\s+/).filter(Boolean);
@@ -245,61 +1018,17 @@ function Halftone({ color='rgba(255,255,255,0.08)', size=13, style }) {
     backgroundSize:`${size}px ${size}px`, ...style }} />);
 }
 
-/* ── Auswechselbare Hintergrund-Muster ─────────────────────────────────────────
-   Als getiltes Canvas-PNG (url()-Background, backgroundRepeat) gerendert statt als
-   CSS-Gradient. Grund: html2canvas 1.4.1 tilt Gradient-Backgrounds mit background-size
-   beim Export nicht zuverlässig (Muster verschwindet im PNG/PDF). Ein gerastertes
-   url()-Tile rendert es sicher — und Vorschau + Export nutzen exakt dasselbe Tile
-   (WYSIWYG). 'theme' = Theme-Eigenlook (kein Overlay), 'none' = bewusst leer. */
-const BG_PATTERNS = {
-  theme:   { label:'Theme-Standard' },
-  none:    { label:'Keins' },
-  dots:    { label:'Punkte',      kind:'dots' },
-  grid:    { label:'Raster',      kind:'grid' },
-  diag:    { label:'Diagonal',    kind:'diag' },
-  cross:   { label:'Schraffur',   kind:'cross' },
-  vstripe: { label:'Streifen',    kind:'vstripe' },
-  checker: { label:'Schachbrett', kind:'checker' },
-  plus:    { label:'Plus',        kind:'plus' },
-};
-const _patTileCache = {};
-const PAT_SS = 4; // Supersampling → scharfe Kanten auch beim 300-DPI-Export
-function makePatternTile(kind, color, s) {
-  const key = kind + '|' + color + '|' + s;
-  if (_patTileCache[key]) return _patTileCache[key];
-  const cv = document.createElement('canvas');
-  cv.width = s * PAT_SS; cv.height = s * PAT_SS;
-  const ctx = cv.getContext('2d');
-  ctx.scale(PAT_SS, PAT_SS);
-  ctx.fillStyle = color; ctx.strokeStyle = color;
-  switch (kind) {
-    case 'dots':
-      ctx.beginPath(); ctx.arc(s/2, s/2, s*0.22, 0, Math.PI*2); ctx.fill(); break;
-    case 'grid':
-      ctx.lineWidth = 1; ctx.beginPath();
-      ctx.moveTo(0.5, 0); ctx.lineTo(0.5, s);
-      ctx.moveTo(0, 0.5); ctx.lineTo(s, 0.5); ctx.stroke(); break;
-    case 'plus': // Voll-Linien durch Tile-Mitte → versetztes Rasterkreuz
-      ctx.lineWidth = 2; ctx.beginPath();
-      ctx.moveTo(s/2, 0); ctx.lineTo(s/2, s);
-      ctx.moveTo(0, s/2); ctx.lineTo(s, s/2); ctx.stroke(); break;
-    case 'diag': // Ecke-zu-Ecke '/' → tilt nahtlos in 2D
-      ctx.lineWidth = 1.5; ctx.beginPath();
-      ctx.moveTo(0, s); ctx.lineTo(s, 0); ctx.stroke(); break;
-    case 'cross':
-      ctx.lineWidth = 1; ctx.beginPath();
-      ctx.moveTo(0, s); ctx.lineTo(s, 0);
-      ctx.moveTo(0, 0); ctx.lineTo(s, s); ctx.stroke(); break;
-    case 'vstripe':
-      ctx.fillRect(0, 0, Math.max(2, s*0.28), s); break;
-    case 'checker':
-      ctx.fillRect(0, 0, s/2, s/2); ctx.fillRect(s/2, s/2, s/2, s/2); break;
-    default: return null;
-  }
-  const uri = cv.toDataURL('image/png');
-  _patTileCache[key] = uri;
-  return uri;
-}
+/* ── Auswechselbare Hintergrund-Muster ─────────────────────────────────────
+   Die Muster-Definitionen liegen in 99-resources/studio-design/src/patterns.js
+   (geteilt mit dem Pattern-Generator und Cloth Sheet). Gerendert wird ein
+   getiltes Canvas-PNG statt eines CSS-Gradients: html2canvas 1.4.1 tilt
+   Gradient-Backgrounds mit background-size beim Export nicht zuverlässig
+   (Muster verschwindet im PNG/PDF). Preview und Export nutzen exakt dasselbe
+   Tile (WYSIWYG). 'theme' = Theme-Eigenlook (kein Overlay), 'none' = leer. */
+const BG_PATTERNS = Object.assign(
+  { theme:{ label:'Theme-Standard' }, none:{ label:'Keins' } },
+  ...StudioDesign.patternKeys().map(k => ({ [k]:{ label:StudioDesign.PATTERNS[k].label, kind:k } })));
+
 function patternColor(t, ground) {
   const op = t.bgPatternOpacity != null ? t.bgPatternOpacity : 0.06;
   if (!t.bgPatternAuto && t.bgPatternColor) return withAlpha(t.bgPatternColor, op);
@@ -308,11 +1037,57 @@ function patternColor(t, ground) {
 function BgPattern({ t, ground }) {
   const p = BG_PATTERNS[t.bgPattern];
   if (!p || !p.kind) return null; // 'theme' / 'none' / unbekannt → kein Overlay
-  const s = t.bgPatternSize || 22;
-  const uri = makePatternTile(p.kind, patternColor(t, ground), s);
-  if (!uri) return null;
-  return (<div style={{ position:'absolute', inset:0, pointerEvents:'none',
-    backgroundImage:`url(${uri})`, backgroundRepeat:'repeat', backgroundSize:`${s}px ${s}px` }} />);
+  const style = StudioDesign.tileStyle(p.kind, {
+    cell: t.bgPatternSize || StudioDesign.PATTERNS[p.kind].cell,
+    stroke: t.bgPatternStroke || undefined,
+    color: patternColor(t, ground),
+  });
+  if (!style) return null;
+  return <div style={{ position:'absolute', inset:0, pointerEvents:'none', ...style }} />;
+}
+
+/* Muster-Presets mit dem Pattern-Generator und Cloth Sheet austauschen.
+   Übertragen werden nur die Parameter — jedes Tool rendert daraus selbst
+   in seiner eigenen Auflösung. Transport ist die Zwischenablage, damit es
+   auch unter file:// funktioniert (dort teilt sich kein localStorage). */
+function PatternHandoff({ t, set }) {
+  const [msg, setMsg] = React.useState('');
+  const note = s => { setMsg(s); setTimeout(() => setMsg(''), 2500); };
+  const live = BG_PATTERNS[t.bgPattern] && BG_PATTERNS[t.bgPattern].kind;
+
+  async function copy() {
+    if (!live) return note('Erst ein Muster wählen.');
+    const ok = await StudioDesign.Handoff.copy(StudioDesign.Handoff.make.pattern({
+      pattern: t.bgPattern,
+      cell: t.bgPatternSize,
+      stroke: t.bgPatternStroke || StudioDesign.PATTERNS[t.bgPattern].stroke,
+      opacity: t.bgPatternOpacity,
+      color: t.bgPatternAuto ? null : t.bgPatternColor,
+      auto: t.bgPatternAuto,
+    }));
+    note(ok ? 'Preset kopiert.' : 'Kopieren fehlgeschlagen.');
+  }
+  async function paste() {
+    const p = await StudioDesign.Handoff.paste();
+    if (!p) return note('Kein gültiges Preset in der Zwischenablage.');
+    if (p.kind !== 'pattern') return note(`Das ist ein ${StudioDesign.Handoff.describe(p)}-Preset.`);
+    if (!StudioDesign.PATTERNS[p.pattern]) return note(`Unbekanntes Muster: ${p.pattern}`);
+    set('bgPattern', p.pattern);
+    if (p.cell != null) set('bgPatternSize', p.cell);
+    if (p.stroke != null) set('bgPatternStroke', p.stroke);
+    if (p.opacity != null) set('bgPatternOpacity', p.opacity);
+    set('bgPatternAuto', p.auto !== false);
+    if (p.color) set('bgPatternColor', p.color);
+    note(`Übernommen: ${StudioDesign.PATTERNS[p.pattern].label}`);
+  }
+
+  return (<>
+    <div className="btnrow" style={{ display:'flex', gap:6, marginTop:6 }}>
+      <button className="btn sec-btn" onClick={copy}>⧉ Preset kopieren</button>
+      <button className="btn sec-btn" onClick={paste}>⤓ Preset einfügen</button>
+    </div>
+    <div className="hint">Tauscht das Muster mit dem Pattern-Generator und Cloth Sheet aus — als Parameter, nicht als Bild, damit jedes Tool in voller Auflösung rendert.{msg && <> · <span style={{ color:'var(--gold)' }}>{msg}</span></>}</div>
+  </>);
 }
 
 /* ── Primitives ───────────────────────────────────────────────────────────── */
@@ -384,7 +1159,27 @@ function PromoStamp({ text, shape='circle', color, textColor, size=104, rotate=-
   return (<div style={{ ...base, transform:`rotate(${rotate}deg)`, borderRadius:'50%', border:`3px solid ${BRAND.white}` }}>
     <span style={{ fontSize:fs, maxWidth:size*0.75 }}>{text}</span></div>);
 }
-// Stackable overlay layer: places Vol / variant / promo into free corners (v1-style collision dodge).
+// Serien-Schwierigkeit als Ampel-Badge (3 Punkte, bis inkl. aktivem Level gefüllt).
+const SERIES_LEVELS = {
+  easy:   { n:1, label:'Easy',   color:'#3faa5a' },
+  medium: { n:2, label:'Medium', color:BRAND.gold },
+  expert: { n:3, label:'Expert', color:BRAND.crimson },
+};
+function LevelBadge({ level='medium', theme, scale=1 }) {
+  const L = SERIES_LEVELS[level] || SERIES_LEVELS.medium;
+  const dot = 11 * scale;
+  return (<div style={{ display:'flex', alignItems:'center', gap:8*scale, background:theme.badgeBg, color:theme.badgeColor,
+    padding:`${6*scale}px ${13*scale}px`, borderRadius:999, border:`1.5px solid ${BRAND.dark}`, whiteSpace:'nowrap',
+    boxShadow:'0 3px 10px rgba(11,9,10,0.18)' }}>
+    <span style={{ display:'flex', gap:4*scale }}>
+      {[0,1,2].map(i => (<span key={i} style={{ width:dot, height:dot, borderRadius:'50%',
+        background:i < L.n ? L.color : withAlpha(theme.badgeColor, 0.25) }} />))}
+    </span>
+    <span style={{ fontFamily:SANS, fontWeight:700, fontSize:12*scale, letterSpacing:'0.1em', textTransform:'uppercase' }}>{L.label}</span>
+  </div>);
+}
+
+// Stackable overlay layer: places Vol / variant / promo / level into free corners (v1-style collision dodge).
 function Overlays({ theme, t, pad, reserved=[], scale=1, promoSize=104 }) {
   if (!t.showBadges) return null;
   const occupied = new Set(reserved);
@@ -416,6 +1211,11 @@ function Overlays({ theme, t, pad, reserved=[], scale=1, promoSize=104 }) {
     out.push(<div key="promo" style={{ position:'absolute', ...cornerStyle(c, pad) }}>
       <PromoStamp text={t.promoBadgeText.trim().toUpperCase()} shape={t.promoBadgeShape}
         color={t.promoBadgeColor} textColor={t.promoBadgeTextColor} size={promoSize} /></div>);
+  }
+  if (t.showLevelBadge !== false && t.seriesLevel) {
+    const c = place(t.posLevel || 'top-right');
+    out.push(<div key="level" style={{ position:'absolute', ...cornerStyle(c, pad) }}>
+      <LevelBadge level={t.seriesLevel} theme={theme} scale={scale} /></div>);
   }
   return <>{out}</>;
 }
@@ -548,140 +1348,16 @@ function HeroLayout({ layout, theme, hero, heroPBN, pages, top, left, w, h, pad,
     w={w} h={h} top={top} left={left} pad={pad} placeholder={placeholder} shadow={shadow} />;
 }
 
-/* ── Themes (English preset copy) ─────────────────────────────────────────── */
-const THEMES = {
-  kids: { key:'kids', ground:BRAND.light, ink:BRAND.dark, eyebrow:'Anime Coloring Book · Vol. 1',
-    eyebrowColor:BRAND.gold, titleColor:BRAND.crimson, accentColor:BRAND.gold, subColor:withAlpha(BRAND.black,0.66),
-    frame:'round', frameBg:BRAND.white, frameBorder:BRAND.dark, frameBorderW:2, badgeBg:BRAND.gold, badgeColor:BRAND.dark,
-    motif:'stars', motifColor:BRAND.gold, motifColor2:BRAND.crimson, watermark:withAlpha(BRAND.black,0.3), authorOnDark:false,
-    back:{ eyebrow:'Inside', hook:['Hours','full of color'],
-      pitch:'Hand-drawn anime animals — a fox in cherry-blossom wind, a sleeping cat, a little dragon. Every page single-sided on heavy paper, clean lines and plenty of room to color.',
-      features:['{n} motifs','Single-sided','Heavy paper','Ages {age}'] } },
-  anime: { key:'anime', ground:BRAND.dark, ink:BRAND.light, eyebrow:'Manga Lineart · Vol. 1',
-    eyebrowColor:BRAND.gold, titleColor:BRAND.white, accentColor:BRAND.gold, subColor:withAlpha(BRAND.white,0.72),
-    frame:'rect', frameBg:BRAND.light, frameBorder:BRAND.crimson, frameBorderW:3, badgeBg:BRAND.crimson, badgeColor:BRAND.white,
-    motif:'halftone', watermark:withAlpha(BRAND.white,0.4), authorOnDark:true,
-    back:{ eyebrow:'Inside', hook:['Your','lines.','Your colors.'],
-      pitch:'Original manga scenes — heroes mid-leap, familiar companions, quiet ramen nights and neon skylines. Single-sided on heavy paper, ready for markers, fineliners and watercolor.',
-      features:['{n} scenes','Single-sided','Heavy paper','Ages {age}'] } },
-  fantasy: { key:'fantasy', ground:BRAND.crimson, ink:BRAND.light, eyebrow:'Fantasy · Collected Edition',
-    eyebrowColor:BRAND.gold, titleColor:BRAND.white, accentColor:BRAND.gold, subColor:withAlpha(BRAND.white,0.86),
-    frame:'arch', frameBg:BRAND.light, frameBorder:BRAND.gold, frameBorderW:2, badgeBg:BRAND.gold, badgeColor:BRAND.dark,
-    motif:'sparkles', motifColor:BRAND.gold, motifColor2:withAlpha(BRAND.white,0.85), watermark:withAlpha(BRAND.white,0.5), authorOnDark:true,
-    back:{ eyebrow:'From the realm', hook:['A kingdom','awaits','your colors'],
-      pitch:'Hand-illustrated scenes — galloping unicorns, sleeping dragons, enchanted forests and crystal towers. Every page single-sided on premium paper, so your magic stays exactly where you put it.',
-      features:['{n} motifs','Single-sided','Premium paper','Ages {age}'] } },
-  kawaii: { key:'kawaii', ground:BRAND.white, ink:BRAND.dark, eyebrow:'Kawaii · Chibi',
-    eyebrowColor:BRAND.crimson, titleColor:BRAND.crimson, accentColor:BRAND.gold, subColor:withAlpha(BRAND.black,0.66),
-    frame:'round', frameBg:BRAND.light, frameBorder:BRAND.dark, frameBorderW:2, badgeBg:BRAND.gold, badgeColor:BRAND.dark,
-    motif:'hearts', motifColor:BRAND.crimson, motifColor2:BRAND.gold, watermark:withAlpha(BRAND.black,0.3), authorOnDark:false,
-    back:{ eyebrow:'Inside', hook:['So much','cuteness'],
-      pitch:'The cutest chibi characters to color — sleepy cats, sushi friends, mochi mascots and tiny dragons. Single-sided pages, soft lines, just enough detail. Happy coloring (＾▽＾)',
-      features:['{n} motifs','Single-sided','Premium paper','Ages {age}'] } },
-
-  /* ── v1 families as v2 themes (clean DOM, own fonts) ── */
-  colorlabs: { key:'colorlabs', ground:BRAND.white, ink:BRAND.dark, eyebrow:'Color Labs · Edition',
-    eyebrowColor:BRAND.gold, titleColor:BRAND.crimson, accentColor:BRAND.gold, subColor:withAlpha(BRAND.black,0.66),
-    titleFont:'"Anton","Helvetica Neue",Arial,sans-serif', bodyFont:'"Helvetica Neue",Helvetica,Arial,sans-serif',
-    frame:'rect', frameBg:BRAND.white, frameBorder:BRAND.dark, frameBorderW:2, badgeBg:BRAND.dark, badgeColor:BRAND.white,
-    motif:'stars', motifColor:BRAND.gold, motifColor2:BRAND.crimson, watermark:withAlpha(BRAND.black,0.3), authorOnDark:false,
-    back:{ eyebrow:'Inside', hook:['Your series,','your colors'],
-      pitch:'Carefully drawn line art in the Color Labs style — clean outlines, plenty of room to color, printed single-sided on premium paper. Perfect for markers, colored pencils and fineliners.',
-      features:['{n} motifs','Single-sided','Premium paper','Ages {age}'] } },
-  standard: { key:'standard', ground:BRAND.white, ink:BRAND.dark, eyebrow:'Coloring Book · Vol. 1',
-    eyebrowColor:'#6b3fa0', titleColor:'#6b3fa0', accentColor:'#8b5fbf', subColor:withAlpha(BRAND.black,0.66),
-    titleFont:'"Bagel Fat One",sans-serif', bodyFont:'"Fredoka",sans-serif',
-    frame:'round', frameBg:BRAND.white, frameBorder:'#6b3fa0', frameBorderW:2, badgeBg:'#6b3fa0', badgeColor:BRAND.white,
-    motif:'sparkles', motifColor:'#c8a4d4', motifColor2:'#6b3fa0', watermark:withAlpha(BRAND.black,0.3), authorOnDark:false,
-    back:{ eyebrow:'Inside', hook:['Color in','your world'],
-      pitch:'A versatile collection of hand-drawn motifs to color — varied, cleanly drawn and printed single-sided on heavy paper. For relaxed hours with color.',
-      features:['{n} motifs','Single-sided','Heavy paper','Ages {age}'] } },
-  boldpop: { key:'boldpop', ground:BRAND.white, ink:BRAND.dark, eyebrow:'Pop · Vol. 1',
-    eyebrowColor:BRAND.crimson, titleColor:'#1a1a2e', accentColor:BRAND.gold, subColor:withAlpha(BRAND.black,0.66),
-    titleFont:'"Bungee",sans-serif', bodyFont:'"Mochiy Pop One",sans-serif',
-    frame:'rect', frameBg:BRAND.light, frameBorder:'#1a1a2e', frameBorderW:3, badgeBg:BRAND.crimson, badgeColor:BRAND.white,
-    motif:'stars', motifColor:BRAND.gold, motifColor2:BRAND.crimson, watermark:withAlpha(BRAND.black,0.3), authorOnDark:false,
-    back:{ eyebrow:'Inside', hook:['Loud.','Bright.','Yours.'],
-      pitch:'Punchy motifs with thick lines and maximum pop — made for vivid colors and bold combinations. Single-sided on heavy paper, ready for markers and pens.',
-      features:['{n} motifs','Single-sided','Heavy paper','Ages {age}'] } },
-  handmade: { key:'handmade', ground:'#f5f0e8', ink:BRAND.dark, eyebrow:'Handmade · Edition',
-    eyebrowColor:'#8b6914', titleColor:'#8b6914', accentColor:'#c17e10', subColor:withAlpha(BRAND.black,0.66),
-    titleFont:'"Caveat",cursive', bodyFont:'"Caveat",cursive',
-    frame:'round', frameBg:BRAND.white, frameBorder:'#8b6914', frameBorderW:2, badgeBg:BRAND.crimson, badgeColor:BRAND.white,
-    motif:'hearts', motifColor:'#c17e10', motifColor2:'#8b6914', watermark:withAlpha(BRAND.black,0.3), authorOnDark:false,
-    back:{ eyebrow:'Inside', hook:['Drawn with','love'],
-      pitch:'Charming, hand-drawn motifs with warm character — every line set with love. Single-sided on natural-white paper, ideal for watercolor, colored pencils and quiet afternoons.',
-      features:['{n} motifs','Single-sided','Natural paper','Ages {age}'] } },
-  prestige: { key:'prestige', ground:'#f8f5f0', ink:BRAND.dark, eyebrow:"Prestige · Collector's Edition",
-    eyebrowColor:'#e38f14', titleColor:'#161a1d', accentColor:'#e38f14', subColor:withAlpha(BRAND.black,0.66),
-    titleFont:'"Cinzel Decorative",serif', bodyFont:'"Playfair Display",serif',
-    frame:'arch', frameBg:BRAND.light, frameBorder:'#e38f14', frameBorderW:2, badgeBg:BRAND.crimson, badgeColor:'#f5e8c0',
-    motif:'diamonds', motifColor:'#e38f14', motifColor2:'#161a1d', watermark:withAlpha(BRAND.black,0.3), authorOnDark:false,
-    back:{ eyebrow:'From the collection', hook:['A world','in color'],
-      pitch:'A refined collection of detailed motifs in an elegant presentation — set in classic typography, printed single-sided on premium paper. For discerning hours with color.',
-      features:['{n} motifs','Single-sided','Premium paper','Ages {age}'] } },
-};
-/* Farb-Paletten je Theme (5 editierbare Tokens), portiert aus v1 ───────────── */
-const PALETTE_PRESETS = {
-  kids: [
-    { name:'Hell',         ground:'#f5f3f4', titleColor:'#a4161a', accentColor:'#e38f14', badgeBg:'#e38f14', badgeColor:'#161a1d' },
-    { name:'Sky',          ground:'#b3e5fc', titleColor:'#01579b', accentColor:'#ff6f00', badgeBg:'#e53935', badgeColor:'#ffffff' },
-    { name:'Mint',         ground:'#c8f5e4', titleColor:'#1b5e20', accentColor:'#ff7043', badgeBg:'#004d20', badgeColor:'#ffffff' },
-    { name:'Cotton Candy', ground:'#ffe4f0', titleColor:'#880e4f', accentColor:'#e91e63', badgeBg:'#560027', badgeColor:'#ffffff' },
-  ],
-  anime: [
-    { name:'Dunkel',  ground:'#161a1d', titleColor:'#ffffff', accentColor:'#e38f14', badgeBg:'#a4161a', badgeColor:'#ffffff' },
-    { name:'Purple',  ground:'#0d0d2b', titleColor:'#ffffff', accentColor:'#ff00d4', badgeBg:'#c300ff', badgeColor:'#ffffff' },
-    { name:'Red Storm',ground:'#1a0000', titleColor:'#ffffff', accentColor:'#ff6600', badgeBg:'#ffcc00', badgeColor:'#000000' },
-    { name:'Cyber',   ground:'#050510', titleColor:'#00cc66', accentColor:'#ff005c', badgeBg:'#ffee00', badgeColor:'#000000' },
-  ],
-  fantasy: [
-    { name:'Crimson',  ground:'#a4161a', titleColor:'#ffffff', accentColor:'#e38f14', badgeBg:'#e38f14', badgeColor:'#161a1d' },
-    { name:'Midnight', ground:'#0d0d1a', titleColor:'#e8d5ff', accentColor:'#c9a227', badgeBg:'#7b00a0', badgeColor:'#ffffff' },
-    { name:'Emerald',  ground:'#1a3d10', titleColor:'#f5e8c0', accentColor:'#c9a227', badgeBg:'#0d2008', badgeColor:'#f5e8c0' },
-    { name:'Ice',      ground:'#0d3b6e', titleColor:'#ffffff', accentColor:'#a8d8f0', badgeBg:'#072244', badgeColor:'#ffffff' },
-  ],
-  kawaii: [
-    { name:'Cherry',   ground:'#FFB8D6', titleColor:'#c2185b', accentColor:'#00897b', badgeBg:'#ff6b9d', badgeColor:'#ffffff' },
-    { name:'Mint',     ground:'#c8f5e4', titleColor:'#00796b', accentColor:'#ff6b9d', badgeBg:'#004d40', badgeColor:'#ffffff' },
-    { name:'Lavender', ground:'#ede0f7', titleColor:'#8b40c8', accentColor:'#e38f14', badgeBg:'#6b20a0', badgeColor:'#ffffff' },
-    { name:'Peach',    ground:'#fff0e0', titleColor:'#e64a19', accentColor:'#ffb300', badgeBg:'#bf360c', badgeColor:'#ffffff' },
-  ],
-  colorlabs: [
-    { name:'CI Crimson', ground:'#ffffff', titleColor:'#a4161a', accentColor:'#e38f14', badgeBg:'#161a1d', badgeColor:'#ffffff' },
-    { name:'Hot Pink',   ground:'#ffffff', titleColor:'#ff1f7a', accentColor:'#e38f14', badgeBg:'#161a1d', badgeColor:'#ffffff' },
-    { name:'Gold/Dark',  ground:'#ffffff', titleColor:'#161a1d', accentColor:'#e38f14', badgeBg:'#e38f14', badgeColor:'#161a1d' },
-    { name:'Cyber Pop',  ground:'#0b0b14', titleColor:'#ff005c', accentColor:'#00e5cc', badgeBg:'#ffe600', badgeColor:'#0b0b14' },
-  ],
-  standard: [
-    { name:'Lavender', ground:'#ffffff', titleColor:'#6b3fa0', accentColor:'#8b5fbf', badgeBg:'#6b3fa0', badgeColor:'#ffffff' },
-    { name:'Ocean',    ground:'#f0f8ff', titleColor:'#0d47a1', accentColor:'#42a5f5', badgeBg:'#0d47a1', badgeColor:'#ffffff' },
-    { name:'Forest',   ground:'#f2f8ee', titleColor:'#2d5a1b', accentColor:'#4a9f3f', badgeBg:'#1a3d10', badgeColor:'#ffffff' },
-    { name:'Sunset',   ground:'#fff8f2', titleColor:'#c0392b', accentColor:'#e67e22', badgeBg:'#922b21', badgeColor:'#ffffff' },
-  ],
-  boldpop: [
-    { name:'Dark Gold',ground:'#ffffff', titleColor:'#1a1a2e', accentColor:'#e38f14', badgeBg:'#a4161a', badgeColor:'#ffffff' },
-    { name:'Neon',     ground:'#0a0a14', titleColor:'#ff2d9b', accentColor:'#00e5cc', badgeBg:'#ffe600', badgeColor:'#0a0a14' },
-    { name:'Cobalt',   ground:'#f5f9ff', titleColor:'#1565c0', accentColor:'#f50057', badgeBg:'#0d47a1', badgeColor:'#ffffff' },
-    { name:'Tropical', ground:'#fff9e8', titleColor:'#e65100', accentColor:'#ffb300', badgeBg:'#bf360c', badgeColor:'#ffffff' },
-  ],
-  handmade: [
-    { name:'Kraft', ground:'#f5f0e8', titleColor:'#8b6914', accentColor:'#c17e10', badgeBg:'#a4161a', badgeColor:'#ffffff' },
-    { name:'Sage',  ground:'#f0f5ec', titleColor:'#3d6b50', accentColor:'#6aab7a', badgeBg:'#2a4d37', badgeColor:'#ffffff' },
-    { name:'Rose',  ground:'#fdf5f5', titleColor:'#a0314a', accentColor:'#d46080', badgeBg:'#7a1a2e', badgeColor:'#ffffff' },
-    { name:'Ink',   ground:'#f8f8f2', titleColor:'#2d2d2d', accentColor:'#8b4513', badgeBg:'#1a1a1a', badgeColor:'#f8f8f2' },
-  ],
-  prestige: [
-    { name:'Dark Gold',ground:'#f8f5f0', titleColor:'#161a1d', accentColor:'#e38f14', badgeBg:'#a4161a', badgeColor:'#f5e8c0' },
-    { name:'Navy',     ground:'#f8f8ff', titleColor:'#0d2461', accentColor:'#c9a227', badgeBg:'#061133', badgeColor:'#f5e8c0' },
-    { name:'Emerald',  ground:'#f5f2ea', titleColor:'#1a3d10', accentColor:'#c9a227', badgeBg:'#0d2008', badgeColor:'#f5e8c0' },
-    { name:'Burgundy', ground:'#fdf8f5', titleColor:'#5c1a1a', accentColor:'#c9a227', badgeBg:'#3a0a0a', badgeColor:'#f5e8c0' },
-  ],
-};
+/* ── Themes & Paletten ────────────────────────────────────────────────────
+   Geteilt mit Cloth Sheet und dem Pattern-Generator, gepflegt in
+   99-resources/studio-design/src/tokens.js. Neue Themes/Paletten dort
+   ergänzen und `node sync.mjs` laufen lassen — nicht hier. */
+const THEMES = StudioDesign.COVER_THEMES;
+const PALETTE_PRESETS = StudioDesign.PALETTE_PRESETS;
 function feat(theme, t) {
   const custom = (t.featuresCustom || '').split('\n').map(s => s.trim()).filter(Boolean);
   const src = custom.length ? custom : theme.back.features;
-  return src.map(f => f.replace('{n}', t.pageCount).replace('{age}', t.ageRange || '8+'));
+  return src.map(f => f.replace('{n}', t.pageCount));
 }
 const HERO_PH = { kids:'Animal lineart', anime:'Manga lineart', fantasy:'Fantasy lineart', kawaii:'Chibi lineart',
   colorlabs:'Lineart', standard:'Lineart', boldpop:'Lineart', handmade:'Lineart', prestige:'Lineart' };
@@ -731,12 +1407,12 @@ function FullBleedCover({ theme, t, hero, heroPBN, pages, w, h, kind }) {
 
 /* ── Artboards ────────────────────────────────────────────────────────────── */
 function FrontCover({ theme, t, hero, heroPBN, pages }) {
-  if (t.frontLayout === 'fullbleed') return <FullBleedCover theme={theme} t={t} hero={hero} heroPBN={heroPBN} pages={pages} w={630} h={891} kind="cover" />;
+  if (t.frontLayout === 'fullbleed') return <FullBleedCover theme={theme} t={t} hero={hero} heroPBN={heroPBN} pages={pages} w={630} h={PAGE_H} kind="cover" />;
   const [l1, l2] = splitTitle(t.title);
   const longest = Math.max(l1.length, l2.length);
   const titleFs = longest > 11 ? 56 : longest > 8 ? 66 : 76;
   const onDark = theme.authorOnDark;
-  return (<div style={{ width:630, height:891, background:theme.ground, position:'relative', overflow:'hidden', fontFamily:SANS }}>
+  return (<div style={{ width:630, height:PAGE_H, background:theme.ground, position:'relative', overflow:'hidden', fontFamily:SANS }}>
     <BgPattern t={t} ground={theme.ground} />
     {theme.motif === 'halftone'
       ? <Halftone color={withAlpha(BRAND.white,0.07)} size={13} />
@@ -746,8 +1422,8 @@ function FrontCover({ theme, t, hero, heroPBN, pages }) {
       <div style={{ fontSize:titleFs, color:theme.titleColor }}>{l1}</div>
       {l2 && <div style={{ fontSize:titleFs, color:theme.accentColor }}>{l2}</div>}
     </div>
-    <HeroLayout layout={t.frontLayout} theme={theme} hero={hero} heroPBN={heroPBN} pages={pages} top={300} left={56} w={518} h={462} pad={14} placeholder={HERO_PH[theme.key]} shadow="0 12px 30px rgba(11,9,10,0.20)" />
-    {t.showBadges && <Badge big={t.pageCount} small="MOTIVE" bg={theme.badgeBg} color={theme.badgeColor} rotate={-7} style={{ position:'absolute', top:280, right:22 }} />}
+    <HeroLayout layout={t.frontLayout} theme={theme} hero={hero} heroPBN={heroPBN} pages={pages} top={296} left={56} w={518} h={424} pad={14} placeholder={HERO_PH[theme.key]} shadow="0 12px 30px rgba(11,9,10,0.20)" />
+    {t.showBadges && <Badge big={t.pageCount} small={(t.pageNoun || 'Pages').toUpperCase()} bg={theme.badgeBg} color={theme.badgeColor} rotate={-7} style={{ position:'absolute', top:280, right:22 }} />}
     <div style={{ position:'absolute', bottom:48, left:0, right:0, display:'flex', justifyContent:'center', alignItems:'center', gap:10 }}>
       <span style={{ fontFamily:SANS, fontWeight:700, fontSize:11, letterSpacing:'0.28em', color:onDark ? withAlpha(BRAND.white,0.6) : withAlpha(BRAND.black,0.5) }}>BY</span>
       <span style={{ fontFamily:themeFont(theme), fontSize:24, letterSpacing:'0.02em', textTransform:'uppercase', color:onDark ? BRAND.white : BRAND.dark }}>{t.author}</span>
@@ -762,7 +1438,7 @@ function BackCover({ theme, t, pages, blurb, hook }) {
   const usps = activeUSPs(t);
   const pills = usps.length ? usps.slice(0, 3) : feat(theme, t);
   const hookLines = (hook && hook.length) ? hook : theme.back.hook;
-  return (<div style={{ width:630, height:891, background:theme.ground, position:'relative', overflow:'hidden', fontFamily:SANS }}>
+  return (<div style={{ width:630, height:PAGE_H, background:theme.ground, position:'relative', overflow:'hidden', fontFamily:SANS }}>
     <BgPattern t={t} ground={theme.ground} />
     {theme.motif === 'halftone' && <Halftone color={withAlpha(BRAND.white,0.06)} size={13} />}
     <Eyebrow text={theme.back.eyebrow} color={theme.eyebrowColor} rule={theme.eyebrowColor} style={{ position:'absolute', top:50, left:0, right:0 }} />
@@ -771,11 +1447,11 @@ function BackCover({ theme, t, pages, blurb, hook }) {
         <div key={i} style={{ fontSize:46, color:i === hookLines.length - 1 ? theme.accentColor : theme.titleColor }}>{line}</div>))}
     </div>
     <div style={{ position:'absolute', top:256, left:60, right:60, background:theme.frameBg, border:`1.5px solid ${theme.frameBorder}`, borderRadius:12, padding:'18px 22px', fontFamily:themeBody(theme), fontSize:15, lineHeight:1.55, color:BRAND.dark, boxShadow:'0 6px 18px rgba(11,9,10,0.12)' }}>{(blurb && blurb.trim()) ? blurb : theme.back.pitch}</div>
-    <div style={{ position:'absolute', top:452, left:60, right:60 }}>
+    <div style={{ position:'absolute', top:430, left:60, right:60 }}>
       <div style={{ fontFamily:SANS, fontWeight:700, fontSize:12, letterSpacing:'0.24em', textTransform:'uppercase', color:theme.eyebrowColor, marginBottom:12, textAlign:'center' }}>A peek inside</div>
-      <AssetGrid theme={theme} t={t} pages={pages} indices={[0,1,2,3]} cols={4} maxW={120} maxH={180} gap={10} placeholderBase="Page" />
+      <AssetGrid theme={theme} t={t} pages={pages} indices={[0,1,2,3]} cols={4} maxW={120} maxH={172} gap={10} placeholderBase="Page" />
     </div>
-    <div style={{ position:'absolute', top:712, left:60, right:60, display:'flex', flexWrap:'wrap', gap:8, justifyContent:'center' }}>
+    <div style={{ position:'absolute', top:660, left:60, right:60, display:'flex', flexWrap:'wrap', gap:8, justifyContent:'center' }}>
       {pills.map((f, i) => (<Pill key={i} text={f} bg={i === 0 ? theme.badgeBg : BRAND.white} color={i === 0 ? theme.badgeColor : BRAND.dark} border={i === 0 ? theme.badgeColor : BRAND.dark} />))}
     </div>
     <div style={{ position:'absolute', bottom:50, left:56, right:56, display:'flex', justifyContent:'center', alignItems:'center', gap:10 }}>
@@ -804,7 +1480,7 @@ function ThumbCover({ theme, t, hero, heroPBN, pages }) {
       {l2 && <div style={{ fontSize:titleFs, color:theme.accentColor }}>{l2}</div>}
     </div>
     <HeroLayout layout={t.frontLayout} theme={theme} hero={hero} heroPBN={heroPBN} pages={pages} top={212} left={40} w={460} h={256} pad={12} placeholder={HERO_PH[theme.key]} shadow="0 10px 24px rgba(11,9,10,0.20)" />
-    {t.showBadges && <Badge big={t.pageCount} small="MOTIVE" bg={theme.badgeBg} color={theme.badgeColor} size={86} rotate={-8} style={{ position:'absolute', top:192, right:18 }} />}
+    {t.showBadges && <Badge big={t.pageCount} small={(t.pageNoun || 'Pages').toUpperCase()} bg={theme.badgeBg} color={theme.badgeColor} size={86} rotate={-8} style={{ position:'absolute', top:192, right:18 }} />}
     <div style={{ position:'absolute', bottom:26, left:0, right:0, display:'flex', justifyContent:'center', alignItems:'center', gap:9 }}>
       <span style={{ fontFamily:SANS, fontWeight:700, fontSize:10, letterSpacing:'0.26em', color:onDark ? withAlpha(BRAND.white,0.6) : withAlpha(BRAND.black,0.5) }}>BY</span>
       <span style={{ fontFamily:themeFont(theme), fontSize:20, textTransform:'uppercase', color:onDark ? BRAND.white : BRAND.dark }}>{t.author}</span>
@@ -826,7 +1502,7 @@ function TeaserCover({ theme, t, hero, heroPBN, pages }) {
       : <Motif kind={theme.motif} color={theme.motifColor} color2={theme.motifColor2}
           placements={[{ top:60, left:56, size:22, r:-8 }, { bottom:70, left:90, size:16, r:10 }, { top:90, right:470, size:14, r:14 }]} />}
     <HeroLayout layout={t.frontLayout} theme={theme} hero={hero} heroPBN={heroPBN} pages={pages} top={70} left={500} w={400} h={400} pad={12} placeholder={HERO_PH[theme.key]} shadow="0 14px 34px rgba(11,9,10,0.24)" />
-    {t.showBadges && <Badge big={t.pageCount} small="MOTIVE" bg={theme.badgeBg} color={theme.badgeColor} size={96} rotate={-8} style={{ position:'absolute', top:54, right:40 }} />}
+    {t.showBadges && <Badge big={t.pageCount} small={(t.pageNoun || 'Pages').toUpperCase()} bg={theme.badgeBg} color={theme.badgeColor} size={96} rotate={-8} style={{ position:'absolute', top:54, right:40 }} />}
     <div style={{ position:'absolute', top:70, left:60, width:420, display:'flex', flexDirection:'column' }}>
       <Eyebrow text={t.subtitle} color={theme.eyebrowColor} rule={theme.eyebrowColor} center={false} />
       <div style={{ marginTop:22, fontFamily:themeFont(theme), lineHeight:0.88, textTransform:'uppercase' }}>
@@ -848,7 +1524,15 @@ async function captureNode(node, scale) {
   await document.fonts.ready;
   const prev = node.style.transform;
   node.style.transform = 'none';
-  await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+  // Ein Frame abwarten, damit das zurückgesetzte transform greift. In einem Hintergrund-Tab
+  // feuert requestAnimationFrame nicht → zusätzlicher setTimeout-Fallback, sonst hängt der
+  // Export für immer, wenn man während des Exports das Fenster wechselt.
+  await new Promise(r => {
+    let done = false;
+    const fin = () => { if (!done) { done = true; r(); } };
+    requestAnimationFrame(() => requestAnimationFrame(fin));
+    setTimeout(fin, 150);
+  });
   const canvas = await html2canvas(node, {
     scale, backgroundColor:null, useCORS:true, allowTaint:true, logging:false,
     width:node.offsetWidth, height:node.offsetHeight,
@@ -885,13 +1569,13 @@ function canvasToWebpBlob(canvas, quality = 0.82) {
 }
 
 /* ── Preview board wrapper (native size + display scale) ───────────────────── */
-function Board({ w, h, scale, label, fileBase, registerRef, children }) {
+function Board({ w, h, scale, label, fileBase, registerRef, pngScale = 2, children }) {
   const ref = useRef(null);
   React.useEffect(() => { registerRef(fileBase, ref); }, []);
   return (<div className="board">
     <div className="board-head">
       <span className="nm">{label}</span>
-      <button onClick={async () => downloadCanvas(await captureNode(ref.current, label.includes('A4') ? 4.85 : 2), fileBase + '.png')}>PNG</button>
+      <button onClick={async () => downloadCanvas(await captureNode(ref.current, pngScale), fileBase + '.png')}>PNG</button>
     </div>
     <div className="board-stage" style={{ width:w*scale, height:h*scale }}>
       <div className="artboard" ref={ref} style={{ width:w, height:h, transform:`scale(${scale})` }}>{children}</div>
@@ -929,7 +1613,7 @@ function activeUSPs(t) {
 function WhatsInsideCover({ theme, t, pages }) {
   const usps = activeUSPs(t);
   const items = usps.length ? usps : feat(theme, t);
-  return (<div style={{ width:630, height:891, background:theme.ground, position:'relative', overflow:'hidden', fontFamily:themeBody(theme) }}>
+  return (<div style={{ width:630, height:PAGE_H, background:theme.ground, position:'relative', overflow:'hidden', fontFamily:themeBody(theme) }}>
     <BgPattern t={t} ground={theme.ground} />
     {theme.motif === 'halftone' && <Halftone color={withAlpha(BRAND.white,0.06)} size={13} />}
     <Eyebrow text="What's inside" color={theme.eyebrowColor} rule={theme.eyebrowColor} style={{ position:'absolute', top:50, left:0, right:0 }} />
@@ -937,7 +1621,7 @@ function WhatsInsideCover({ theme, t, pages }) {
       <div style={{ fontSize:44, color:theme.titleColor }}>Inside the</div>
       <div style={{ fontSize:44, color:theme.accentColor }}>book</div>
     </div>
-    <div style={{ position:'absolute', top:226, left:60, right:60, display:'flex', flexDirection:'column', gap:13 }}>
+    <div style={{ position:'absolute', top:218, left:60, right:60, display:'flex', flexDirection:'column', gap:12 }}>
       {items.map((it, i) => (
         <div key={i} style={{ display:'flex', alignItems:'flex-start', gap:13 }}>
           <div style={{ flex:'0 0 auto', width:28, height:28, borderRadius:'50%', background:theme.badgeBg, color:theme.badgeColor,
@@ -983,6 +1667,22 @@ function TabletLine({ size=96, color=BRAND.dark, w=4 }) {
     strokeLinejoin="round" strokeLinecap="round" style={{ display:'block' }}>
     <rect x="9" y="5" width="30" height="38" rx="3" /><line x1="20" y1="38" x2="28" y2="38" />
     <path d="M30 13l5 5-11 11-5 1 1-5z" /></svg>);
+}
+function FileLine({ size=96, color=BRAND.dark, w=4 }) {
+  return (<svg width={size} height={size} viewBox="0 0 48 48" fill="none" stroke={color} strokeWidth={w}
+    strokeLinejoin="round" strokeLinecap="round" style={{ display:'block' }}>
+    <path d="M28 5H12a3 3 0 0 0-3 3v32a3 3 0 0 0 3 3h24a3 3 0 0 0 3-3V16z" /><path d="M28 5v11h11" />
+    <line x1="16" y1="26" x2="30" y2="26" /><line x1="16" y1="33" x2="26" y2="33" /></svg>);
+}
+function PagesLine({ size=96, color=BRAND.dark, w=4 }) {
+  return (<svg width={size} height={size} viewBox="0 0 48 48" fill="none" stroke={color} strokeWidth={w}
+    strokeLinejoin="round" strokeLinecap="round" style={{ display:'block' }}>
+    <rect x="6" y="10" width="24" height="30" rx="2" /><path d="M14 5h22a2 2 0 0 1 2 2v27" /></svg>);
+}
+function DownloadLine({ size=96, color=BRAND.dark, w=4 }) {
+  return (<svg width={size} height={size} viewBox="0 0 48 48" fill="none" stroke={color} strokeWidth={w}
+    strokeLinejoin="round" strokeLinecap="round" style={{ display:'block' }}>
+    <line x1="24" y1="6" x2="24" y2="28" /><path d="M14 20l10 10 10-10" /><path d="M8 34v6h32v-6" /></svg>);
 }
 function SquareHead({ theme, t, eyebrow, lines }) {
   return (<>
@@ -1064,32 +1764,82 @@ function BeforeAfterCover({ theme, t, hero, heroPBN }) {
   </div>);
 }
 
-// 4) Difficulty-Levels — bis zu 3 Stufen (Name + Detail) als Karten.
-function DifficultyCover({ theme, t }) {
-  const rows = [[t.diff1Name, t.diff1Detail], [t.diff2Name, t.diff2Detail], [t.diff3Name, t.diff3Detail]]
-    .filter(r => (r[0] || '').trim());
-  const rad = theme.frame === 'round' ? 20 : 10;
+// 3b) Before & After Grid — mehrere Linework→koloriert-Paare untereinander (3 Reihen) oder
+//     als 2×2-Raster, jeweils mit Pfeil dazwischen. Optional rechts eine Icon-Spalte
+//     (300 DPI / PDF / Seiten / Download) und unten eine Zielgruppen-Zeile — beides
+//     abschaltbar, damit die Folie nicht überladen wirkt. Bildquellen: eigene Paar-Slots
+//     (imgs.baLine/baColor); Paar 1 fällt auf Hero-PBN/Hero zurück, damit ohne neue
+//     Uploads schon etwas zu sehen ist.
+function BeforeAfterGridCover({ theme, t, lineArt, colored, hero, heroPBN }) {
+  const grid2 = t.baLayout === 'grid2x2';
+  lineArt = lineArt || []; colored = colored || [];
+  const pairs = Array.from({ length: grid2 ? 4 : 3 }, (_, i) => ({
+    line:  lineArt[i] || (i === 0 ? heroPBN : null),
+    color: colored[i] || (i === 0 ? hero : null),
+  }));
+  // „{pages}" im Feature-Text zieht Seitenzahl + Seiten-Wort aus den übrigen Einstellungen.
+  const pagesLabel = `${t.pageCount} ${t.pageNoun || 'Pages'}`;
+  const fill = s => (s || '').split('{pages}').join(pagesLabel).trim();
+  const feats = !t.baShowFeatures ? []
+    : (t.baFeatures || '').split('\n').map(s => s.trim()).filter(Boolean).slice(0, 4)
+        .map(line => { const [h, ...rest] = line.split('::'); return { head:fill(h), sub:fill(rest.join('::')) }; });
+  const footer = (t.baFooter || '').trim();
+  const head = (t.baHeadline || '').split('\n').map(s => s.trim()).filter(Boolean);
+
+  const PAD = 60, featW = feats.length ? 216 : 0, featGap = featW ? 28 : 0;
+  const gridW = 1080 - 2 * PAD - featW - featGap;
+  const top = 300, gridH = (footer ? 930 : 1010) - top;
+  const rows = grid2 ? 2 : 3, cols = grid2 ? 2 : 1;
+  const rowGap = 18, pairGap = 26, arrowW = grid2 ? 40 : 64;
+  const cellH = (gridH - rowGap * (rows - 1)) / rows;
+  const pairW = (gridW - pairGap * (cols - 1)) / cols;
+  const tile = tileBox(ASSET_AR[t.assetAspect] || 1, (pairW - arrowW - 16) / 2, cellH);
+  const rad = theme.frame === 'round' ? 14 : 6;
+  const Tile = ({ src, ph }) => (
+    <div style={{ width:tile.w, height:tile.h, boxSizing:'border-box', background:theme.frameBg,
+      border:`1.5px solid ${theme.frameBorder}`, borderRadius:rad, padding:6, boxShadow:'0 6px 16px rgba(11,9,10,0.14)' }}>
+      <ImgSlot src={src} radius={Math.max(2, rad - 3)} placeholder={ph} fit={t.assetFit || 'cover'} /></div>);
+  const ICONS = [PrinterLine, FileLine, PagesLine, DownloadLine];
+
   return (<div style={{ width:1080, height:1080, background:theme.ground, position:'relative', overflow:'hidden', fontFamily:themeBody(theme) }}>
     <BgPattern t={t} ground={theme.ground} />
     {theme.motif === 'halftone' && <Halftone color={withAlpha(BRAND.white,0.06)} size={14} />}
-    <SquareHead theme={theme} t={t} eyebrow="Pick your level" lines={['Difficulty', 'levels']} />
-    <div style={{ position:'absolute', top:360, left:90, right:90, display:'flex', flexDirection:'column', gap:28 }}>
-      {rows.map(([name, detail], i) => (
-        <div key={i} style={{ display:'flex', alignItems:'center', gap:26, background:theme.frameBg,
-          border:`${theme.frameBorderW}px solid ${theme.frameBorder}`, borderRadius:rad, padding:'26px 30px', boxShadow:'0 8px 20px rgba(11,9,10,0.12)' }}>
-          <div style={{ flex:'0 0 auto', width:72, height:72, borderRadius:'50%', background:theme.badgeBg, color:theme.badgeColor,
-            display:'flex', alignItems:'center', justifyContent:'center', fontFamily:themeFont(theme), fontSize:36 }}>{i + 1}</div>
-          <div>
-            <div style={{ fontFamily:themeFont(theme), fontSize:42, textTransform:'uppercase', color:theme.titleColor, lineHeight:1 }}>{name}</div>
-            {(detail || '').trim() && <div style={{ fontFamily:themeBody(theme), fontSize:24, color:theme.subColor, marginTop:6 }}>{detail}</div>}
-          </div>
-        </div>))}
+    <SquareHead theme={theme} t={t} eyebrow={t.title} lines={head} />
+    <div style={{ position:'absolute', top, left:PAD, height:gridH, width:1080 - 2 * PAD, display:'flex', gap:featGap }}>
+      <div style={{ width:gridW, display:'flex', flexDirection:'column', gap:rowGap }}>
+        {Array.from({ length:rows }).map((_, r) => (
+          <div key={r} style={{ height:cellH, display:'flex', gap:pairGap, alignItems:'center', justifyContent:'center' }}>
+            {Array.from({ length:cols }).map((_, c) => {
+              const i = r * cols + c, p = pairs[i];
+              return (<div key={c} style={{ width:pairW, display:'flex', alignItems:'center', justifyContent:'center', gap:8 }}>
+                <Tile src={p.line} ph={`Line art ${i + 1}`} />
+                <div style={{ width:arrowW, textAlign:'center', lineHeight:1, fontFamily:themeFont(theme),
+                  fontSize:grid2 ? 30 : 42, color:theme.accentColor }}>→</div>
+                <Tile src={p.color} ph={`Colored ${i + 1}`} />
+              </div>); })}
+          </div>))}
+      </div>
+      {!!feats.length && (
+        <div style={{ width:featW, display:'flex', flexDirection:'column', justifyContent:'space-around', alignItems:'center', textAlign:'center' }}>
+          {feats.map((f, i) => {
+            const Icon = ICONS[i % ICONS.length];
+            return (<div key={i} style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:9 }}>
+              <div style={{ width:84, height:84, borderRadius:'50%', background:theme.badgeBg,
+                display:'flex', alignItems:'center', justifyContent:'center', boxShadow:'0 6px 16px rgba(11,9,10,0.16)' }}>
+                <Icon size={46} color={theme.badgeColor} w={3.4} /></div>
+              <div style={{ fontFamily:themeFont(theme), fontSize:30, lineHeight:1.02, textTransform:'uppercase', color:theme.titleColor }}>{f.head}</div>
+              {f.sub && <div style={{ fontFamily:themeBody(theme), fontSize:17, lineHeight:1.25, color:theme.subColor }}>{f.sub}</div>}
+            </div>); })}
+        </div>)}
     </div>
+    {footer && <div style={{ position:'absolute', left:PAD, right:PAD, bottom:52, background:theme.badgeBg, color:theme.badgeColor,
+      borderRadius:999, padding:'14px 28px', textAlign:'center', fontFamily:themeFont(theme), fontSize:30,
+      textTransform:'uppercase', letterSpacing:'0.02em', boxShadow:'0 8px 20px rgba(11,9,10,0.18)' }}>{footer}</div>}
     <Watermark color={theme.watermark} text={t.website} show={t.showWebsite} />
   </div>);
 }
 
-// 5) Print or Digital — zwei Modus-Karten (je nach t.formatMode).
+// 4) Print or Digital — zwei Modus-Karten (je nach t.formatMode).
 function PrintDigitalCover({ theme, t }) {
   const mode = t.formatMode || 'both';
   const cards = [];
@@ -1122,17 +1872,22 @@ function HumanLoopCover({ theme, t }) {
     <BgPattern t={t} ground={theme.ground} />
     {theme.motif === 'halftone' && <Halftone color={withAlpha(BRAND.white,0.06)} size={14} />}
     <Eyebrow text="Our quality promise" color={theme.eyebrowColor} rule={theme.eyebrowColor} style={{ position:'absolute', top:90, left:0, right:0 }} />
-    <div style={{ position:'absolute', top:150, left:70, right:70, textAlign:'center', fontFamily:themeFont(theme), lineHeight:0.92, textTransform:'uppercase' }}>
-      {head.map((l, i) => (<div key={i} style={{ fontSize:96, color:i === head.length - 1 ? theme.accentColor : theme.titleColor }}>{l}</div>))}
-    </div>
-    <div style={{ position:'absolute', top:440, left:120, right:120, textAlign:'center', fontFamily:themeBody(theme), fontSize:27, lineHeight:1.55, color:theme.ink }}>{t.hilText}</div>
-    <div style={{ position:'absolute', top:660, left:160, right:160, display:'flex', flexDirection:'column', gap:22 }}>
-      {bullets.map((b, i) => (
-        <div key={i} style={{ display:'flex', alignItems:'center', gap:18 }}>
-          <div style={{ flex:'0 0 auto', width:42, height:42, borderRadius:'50%', background:theme.badgeBg, color:theme.badgeColor,
-            display:'flex', alignItems:'center', justifyContent:'center', fontSize:24, fontWeight:700 }}>✓</div>
-          <div style={{ fontFamily:themeBody(theme), fontSize:26, color:theme.ink }}>{b}</div>
-        </div>))}
+    {/* Flow-Container: Headline + Text + Bullets stapeln sich mit Abstand und werden vertikal
+        zentriert — so überschreibt langer Text die Stichpunkte nicht mehr. */}
+    <div style={{ position:'absolute', top:170, bottom:110, left:70, right:70, display:'flex', flexDirection:'column',
+      alignItems:'center', justifyContent:'center', gap:44, textAlign:'center' }}>
+      <div style={{ fontFamily:themeFont(theme), lineHeight:0.92, textTransform:'uppercase' }}>
+        {head.map((l, i) => (<div key={i} style={{ fontSize:96, color:i === head.length - 1 ? theme.accentColor : theme.titleColor }}>{l}</div>))}
+      </div>
+      <div style={{ maxWidth:840, fontFamily:themeBody(theme), fontSize:27, lineHeight:1.55, color:theme.ink }}>{t.hilText}</div>
+      <div style={{ display:'flex', flexDirection:'column', gap:20, alignItems:'flex-start', textAlign:'left' }}>
+        {bullets.map((b, i) => (
+          <div key={i} style={{ display:'flex', alignItems:'center', gap:18 }}>
+            <div style={{ flex:'0 0 auto', width:42, height:42, borderRadius:'50%', background:theme.badgeBg, color:theme.badgeColor,
+              display:'flex', alignItems:'center', justifyContent:'center', fontSize:24, fontWeight:700 }}>✓</div>
+            <div style={{ fontFamily:themeBody(theme), fontSize:26, color:theme.ink }}>{b}</div>
+          </div>))}
+      </div>
     </div>
     <Watermark color={theme.watermark} text={t.website} show={t.showWebsite} />
   </div>);
@@ -1148,10 +1903,17 @@ function AboutCover({ theme, t }) {
     <SquareHead theme={theme} t={t} eyebrow="About us" lines={['Ria & Ray']} />
     <div style={{ position:'absolute', top:300, left:120, right:120, textAlign:'center', fontFamily:themeBody(theme), fontSize:25, lineHeight:1.5, color:theme.ink }}>{t.aboutIntro}</div>
     <div style={{ position:'absolute', top:470, left:80, right:80, display:'flex', gap:34 }}>
-      {[['Ria', t.aboutRia], ['Ray', t.aboutRay]].map(([nm, txt], i) => (
+      {[['Ria', t.aboutRia, t.aboutRiaImg], ['Ray', t.aboutRay, t.aboutRayImg]].map(([nm, txt, img], i) => (
         <div key={i} style={{ flex:1, background:theme.frameBg, border:`${theme.frameBorderW}px solid ${theme.frameBorder}`,
-          borderRadius:rad, padding:'28px 26px', boxShadow:'0 8px 20px rgba(11,9,10,0.12)' }}>
-          <div style={{ fontFamily:themeFont(theme), fontSize:40, textTransform:'uppercase', color:theme.accentColor, marginBottom:12 }}>{nm}</div>
+          borderRadius:rad, padding:'26px 26px', boxShadow:'0 8px 20px rgba(11,9,10,0.12)' }}>
+          <div style={{ display:'flex', alignItems:'center', gap:16, marginBottom:14 }}>
+            <div style={{ flex:'0 0 auto', width:76, height:76, borderRadius:'50%', overflow:'hidden', border:`2px solid ${theme.accentColor}`,
+              background:withAlpha(theme.accentColor, 0.14), display:'flex', alignItems:'center', justifyContent:'center' }}>
+              {img ? <img src={img} alt={nm} style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }} />
+                   : <span style={{ fontFamily:themeFont(theme), fontSize:36, color:theme.accentColor }}>{nm[0]}</span>}
+            </div>
+            <div style={{ fontFamily:themeFont(theme), fontSize:40, textTransform:'uppercase', color:theme.accentColor }}>{nm}</div>
+          </div>
           <div style={{ fontFamily:themeBody(theme), fontSize:22, lineHeight:1.5, color:theme.ink }}>{txt}</div>
         </div>))}
     </div>
@@ -1160,6 +1922,76 @@ function AboutCover({ theme, t }) {
     <div style={{ position:'absolute', bottom:70, left:60, right:60, display:'flex', flexWrap:'wrap', gap:'10px 26px', justifyContent:'center' }}>
       {socials.map((s, i) => (<span key={i} style={{ fontFamily:SANS, fontSize:20, color:theme.ink, letterSpacing:'0.02em' }}>{s}</span>))}
     </div>
+    <Watermark color={theme.watermark} text={t.website} show={t.showWebsite} />
+  </div>);
+}
+
+// 8) Comparison — „We vs. the others": zwei Spalten (Us/Them) mit 4 Vergleichszeilen
+//    + Revival-Promise-Banner. Fest gepflegtes Base-Asset (wie About), aus t.cmp*.
+//    Zeilen-Format je Zeile: „Us-Titel :: Us-Text || Them-Titel :: Them-Text".
+function ComparisonCover({ theme, t }) {
+  const GREY_BG = '#efece7', GREY_LINE = '#cfc9c1', GREY_INK = '#8a827a';
+  const parseSide = s => { const [h, ...rest] = (s || '').split('::'); return { head:(h || '').trim(), text:rest.join('::').trim() }; };
+  const rows = (t.cmpRows || '').split('\n').map(s => s.trim()).filter(Boolean).slice(0, 4).map(line => {
+    const [us, them] = line.split('||').map(s => (s || '').trim());
+    return { us:parseSide(us), them:parseSide(them) };
+  });
+  const [tl1, tl2] = (t.cmpTitle || '').split('\n');
+  const Cell = ({ data, win }) => (
+    <div style={{ flex:1, minWidth:0, background:win ? theme.frameBg : GREY_BG, border:`1.5px solid ${win ? theme.badgeBg : GREY_LINE}`,
+      borderRadius:10, padding:'13px 18px', display:'flex', gap:12, alignItems:'flex-start', opacity:win ? 1 : 0.9,
+      boxShadow:win ? '0 4px 12px rgba(11,9,10,0.10)' : 'none' }}>
+      <div style={{ flex:'0 0 auto', width:30, height:30, borderRadius:'50%', background:win ? theme.badgeBg : '#e2ddd6',
+        color:win ? theme.badgeColor : GREY_INK, display:'flex', alignItems:'center', justifyContent:'center', fontSize:17, fontWeight:700 }}>{win ? '✓' : '✕'}</div>
+      <div style={{ minWidth:0 }}>
+        <div style={{ fontFamily:SANS, fontWeight:700, fontSize:19, color:win ? BRAND.dark : GREY_INK, marginBottom:3 }}>{data.head}</div>
+        <div style={{ fontFamily:themeBody(theme), fontSize:15, lineHeight:1.4, color:win ? withAlpha(BRAND.black, 0.6) : GREY_INK }}>{data.text}</div>
+      </div>
+    </div>);
+  return (<div style={{ width:1080, height:1080, background:theme.ground, position:'relative', overflow:'hidden', fontFamily:themeBody(theme) }}>
+    <BgPattern t={t} ground={theme.ground} />
+    {theme.motif === 'halftone' && <Halftone color={withAlpha(BRAND.white,0.06)} size={14} />}
+    <Eyebrow text={t.cmpEyebrow} color={theme.eyebrowColor} rule={theme.eyebrowColor} style={{ position:'absolute', top:50, left:0, right:0 }} />
+    <div style={{ position:'absolute', top:88, left:70, right:70, textAlign:'center', fontFamily:themeFont(theme), lineHeight:0.94, textTransform:'uppercase' }}>
+      <div style={{ fontSize:60, color:theme.titleColor }}>{tl1}</div>
+      {tl2 && <div style={{ fontSize:60, color:theme.accentColor }}>{tl2}</div>}
+    </div>
+    {(t.cmpSub || '').trim() &&
+      <div style={{ position:'absolute', top:tl2 ? 240 : 172, left:160, right:160, textAlign:'center', fontFamily:themeBody(theme), fontSize:20, lineHeight:1.4, color:theme.subColor }}>{t.cmpSub}</div>}
+    {/* Spaltenköpfe Us / Them */}
+    <div style={{ position:'absolute', top:312, left:60, right:60, display:'flex', gap:54 }}>
+      {[[t.cmpUsName, 'Us', theme.badgeBg, theme.badgeColor], [t.cmpThemName, 'Them', GREY_BG, GREY_INK]].map(([nm, lbl, bg, col], i) => (
+        <div key={i} style={{ flex:1, minWidth:0, background:bg, color:col, borderRadius:'10px 10px 0 0', padding:'11px 18px', textAlign:'center' }}>
+          <div style={{ fontFamily:SANS, fontWeight:700, fontSize:12, letterSpacing:'0.12em', textTransform:'uppercase', opacity:0.8 }}>{lbl}</div>
+          <div style={{ fontFamily:themeFont(theme), fontSize:26, textTransform:'uppercase', lineHeight:1.05 }}>{nm}</div>
+        </div>))}
+    </div>
+    {/* Vergleichszeilen mit VS-Kreis in der Mitte */}
+    <div style={{ position:'absolute', top:392, left:60, right:60, display:'flex', flexDirection:'column', gap:10 }}>
+      {rows.map((r, i) => (
+        <div key={i} style={{ display:'flex', gap:54, alignItems:'stretch', position:'relative' }}>
+          <Cell data={r.us} win={true} />
+          <Cell data={r.them} win={false} />
+          <div style={{ position:'absolute', left:'50%', top:'50%', transform:'translate(-50%,-50%)', width:40, height:40, borderRadius:'50%',
+            background:theme.badgeBg, color:theme.badgeColor, fontFamily:themeFont(theme), fontSize:14,
+            display:'flex', alignItems:'center', justifyContent:'center', boxShadow:'0 2px 6px rgba(11,9,10,0.25)' }}>VS</div>
+        </div>))}
+    </div>
+    {/* Revival-Promise-Banner */}
+    <div style={{ position:'absolute', left:60, right:60, top:812, background:BRAND.dark, borderRadius:14, padding:'20px 26px',
+      display:'flex', gap:18, alignItems:'flex-start', boxShadow:'0 8px 20px rgba(11,9,10,0.22)' }}>
+      <div style={{ flex:'0 0 auto', width:44, height:44, borderRadius:'50%', background:theme.accentColor, color:BRAND.dark,
+        display:'flex', alignItems:'center', justifyContent:'center', fontSize:26 }}>↻</div>
+      <div style={{ minWidth:0 }}>
+        <div style={{ fontFamily:SANS, fontWeight:700, fontSize:22, color:theme.accentColor, marginBottom:6 }}>{t.cmpRevivalTitle}</div>
+        <div style={{ fontFamily:themeBody(theme), fontSize:16, lineHeight:1.5, color:BRAND.light }}>{t.cmpRevivalText}</div>
+      </div>
+    </div>
+    {(t.cmpBadge || '').trim() &&
+      <div style={{ position:'absolute', bottom:30, left:0, right:0, textAlign:'center' }}>
+        <span style={{ display:'inline-flex', alignItems:'center', background:theme.badgeBg, color:theme.badgeColor, fontFamily:SANS,
+          fontWeight:700, fontSize:14, letterSpacing:'0.04em', textTransform:'uppercase', padding:'8px 18px', borderRadius:999 }}>{t.cmpBadge}</span>
+      </div>}
     <Watermark color={theme.watermark} text={t.website} show={t.showWebsite} />
   </div>);
 }
@@ -1186,6 +2018,8 @@ const USP_KEYS = [
   ['uspNormalGreyscales', 'Coloring pages — greyscales'],
   ['uspMarkerBrand',      'Marker brand references'],
 ];
+// Variant-Badge-Presets — Text landet 1:1 (in Versalien) auf dem Cover → Englisch.
+const VARIANT_PRESETS = ['Free', 'Starter', 'Full Pack', 'Paid'];
 const COLOR_TOKENS = [
   ['ground',      'Hintergrund'],
   ['titleColor',  'Titel'],
@@ -1193,23 +2027,14 @@ const COLOR_TOKENS = [
   ['badgeBg',     'Badge'],
   ['badgeColor',  'Badge-Text'],
 ];
-// Wählbare Schriften — alle bereits im <head> per Google-Fonts-Link geladen. '' = Theme-Standard.
-const FONT_OPTIONS = [
-  { v:'', label:'Theme-Standard' },
-  { v:'"Anton","Helvetica Neue",Arial,sans-serif', label:'Anton' },
-  { v:'"Bagel Fat One",sans-serif',                 label:'Bagel Fat One' },
-  { v:'"Bungee",sans-serif',                        label:'Bungee' },
-  { v:'"Mochiy Pop One",sans-serif',                label:'Mochiy Pop One' },
-  { v:'"Fredoka",sans-serif',                       label:'Fredoka' },
-  { v:'"Caveat",cursive',                           label:'Caveat (handschriftlich)' },
-  { v:'"Cinzel Decorative",serif',                  label:'Cinzel Decorative' },
-  { v:'"Playfair Display",serif',                   label:'Playfair Display' },
-  { v:'"Helvetica Neue",Helvetica,Arial,sans-serif',label:'Helvetica (serifenlos)' },
-];
+// Wählbare Schriften — Liste kommt aus 99-resources/studio-design/src/tokens.js;
+// die Familien lädt der <head> über den dort gepflegten Google-Fonts-Link.
+const FONT_OPTIONS = StudioDesign.FONT_OPTIONS;
 const DEFAULTS = { title:'Cute Animals', subtitle:'30 hand-drawn anime motifs to color',
-  author:"Ria's Colorlabs", blurb:'', pageCount:30, ageRange:'8+', showBadges:true,
+  author:"Ria's Colorlabs", blurb:'', pageCount:30, showBadges:true,
+  seriesLevel:'medium', showLevelBadge:true, posLevel:'top-right',
   website:'rias-colorlabs.com', showWebsite:true,
-  bgPattern:'theme', bgPatternSize:22, bgPatternOpacity:0.06, bgPatternAuto:true, bgPatternColor:'#000000',
+  bgPattern:'theme', bgPatternSize:22, bgPatternStroke:0, bgPatternOpacity:0.06, bgPatternAuto:true, bgPatternColor:'#000000',
   frontLayout:'single', assetAspect:'square', assetFit:'cover',
   volumeText:'VOL 1', posVol:'top-left',
   variantType:'none', variantCustom:'', posVariant:'bottom-left',
@@ -1222,11 +2047,27 @@ const DEFAULTS = { title:'Cute Animals', subtitle:'30 hand-drawn anime motifs to
   featuresCustom:'',
   /* ── Etsy shop assets (1:1) ── */
   pageNoun:'Pages',
-  shopHero:true, shopBundle:true, shopBeforeAfter:true, shopDifficulty:true, shopFormats:true, shopHuman:true, shopAbout:true,
-  diff1Name:'Simple', diff1Detail:'12–16 colors',
-  diff2Name:'Medium', diff2Detail:'24–32 colors',
-  diff3Name:'Hard',   diff3Detail:'50 colors',
+  shopHero:true, shopBundle:true, shopBeforeAfter:true, shopBAGrid:true, shopFormats:true, shopHuman:true, shopAbout:true, shopComparison:true,
   formatMode:'both',
+  /* Before-&-After-Raster — Paare + optionale Icon-Spalte / Zielgruppen-Zeile */
+  baLayout:'rows3', baHeadline:'Before &\nafter coloring',
+  // Default bewusst schlank: nur die Bildpaare. Icon-Spalte + Zielgruppen-Zeile sind
+  // vorbereitet und per Checkbox/Feld zuschaltbar, wenn eine Folie mehr tragen soll.
+  baShowFeatures:false,
+  baFeatures:'300 DPI :: High resolution\nPDF + PNG :: Print-ready sizes\n{pages} :: Printable\nInstant download :: Print and enjoy',
+  baFooter:'',
+  /* Comparison-Asset (We vs. the others) — fest gepflegte Base-Infos */
+  cmpEyebrow:"Why Ria's Color Labs",
+  cmpTitle:'We vs. other\nAI coloring books',
+  cmpSub:'Anime coloring content, made with AI — and finished by hand.',
+  cmpUsName:"Ria's Color Labs", cmpThemName:'Typical AI coloring books',
+  cmpRows:'Coherent story worlds :: Every series is built on tested lore and a recurring cast. || Random, disconnected images :: Pages thrown together with no shared world.\n'
+    + 'Consistent characters :: 50+ established characters carry the series across books. || A different face every page :: No recurring cast — every image from a different book.\n'
+    + 'Every page checked :: Each page is reviewed for clean, printable lines before it ships. || Unfiltered bulk AI exports :: Raw generator output, batch-exported to a listing.\n'
+    + 'Transparent AI use :: We name our tools openly — the human curation makes the product. || Hidden or undisclosed AI :: No mention of process or tools, just a product.',
+  cmpRevivalTitle:'The Revival Promise',
+  cmpRevivalText:'If we ever rework an older series with better technique — same theme and style, cleaner execution — you get that revival free, right in your existing download.',
+  cmpBadge:'AI-assisted · Hand-curated · Every page checked',
   printText:'Print at home or at a copy shop — high-resolution PDF, A4 & US Letter, single-sided.',
   digitalText:'Color on your tablet — works in Procreate, GoodNotes and any layer app. PNG + PDF included.',
   hilHeadline:'Human in\nthe loop',
@@ -1235,14 +2076,44 @@ const DEFAULTS = { title:'Cute Animals', subtitle:'30 hand-drawn anime motifs to
   aboutIntro:'Ria and Ray believe creativity does not start with perfection — it starts with curiosity, courage, and the simple joy of trying.',
   aboutRia:'Ria brings playful energy, colorful ideas, and the courage to explore.',
   aboutRay:'Ray brings reflection, imagination, and the belief that every small step can grow into something meaningful.',
+  aboutRiaImg:'', aboutRayImg:'', // Avatare (Data-URI) — über „Als Code kopieren" fest in DEFAULTS hinterlegbar
   aboutOutro:'Together we encourage families to create freely, enjoy the process, and discover their own style. There is no single “right” way to color.',
   socialBrand:"Ria's Colorlab", socialInsta:'@spass_mit_ki', socialYoutube:'YouTube: spass_mit_ki', socialEmail:'ray@raysumeragi.de' };
 
+// Fest gepflegte „Base Infos" (im „Edit Base Infos"-Overlay) — Reihenfolge = Reihenfolge im Snippet.
+const BASE_INFO_KEYS = ['author','website',
+  'shopFormats','formatMode','printText','digitalText',
+  'shopHuman','hilHeadline','hilText','hilBullets',
+  'shopAbout','aboutIntro','aboutRia','aboutRay','aboutOutro','aboutRiaImg','aboutRayImg',
+  'socialBrand','socialInsta','socialYoutube','socialEmail',
+  'shopComparison','cmpEyebrow','cmpTitle','cmpSub','cmpUsName','cmpThemName','cmpRows','cmpRevivalTitle','cmpRevivalText','cmpBadge'];
+// Robust in die Zwischenablage kopieren (navigator.clipboard scheitert auf file:// → Textarea-Fallback).
+function copyText(str) {
+  if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(str).catch(() => fallbackCopy(str));
+  return Promise.resolve(fallbackCopy(str));
+}
+function fallbackCopy(str) {
+  const ta = document.createElement('textarea');
+  ta.value = str; ta.style.position = 'fixed'; ta.style.left = '-9999px';
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); } catch (e) {}
+  document.body.removeChild(ta);
+}
+
 const NPAGES = 8;
+const NPAIRS = 4; // Before-&-After-Paare (3 Reihen nutzen 1–3, 2×2 alle 4)
+// Frische Slot-Struktur (Funktion, damit sich Themes nie dieselben Arrays teilen).
+const emptyImgs = () => ({ hero:null, heroPBN:null, pages:Array(NPAGES).fill(null),
+  baLine:Array(NPAIRS).fill(null), baColor:Array(NPAIRS).fill(null) });
 function App() {
   const saved = loadSaved();
   const [themeKey, setThemeKey] = useState(saved.themeKey || 'kids');
   const [t, setT] = useState({ ...DEFAULTS, ...(saved.t || {}) }); // merge → neue Default-Felder bleiben gefüllt
+  const [uiMode, setUiMode] = useState(saved.uiMode === 'voll' ? 'voll' : 'basis'); // Panel- + Vorschau-Umfang: basis (schlank) / voll (alles)
+  const [tab, setTab] = useState('design'); // Ansicht-Tab: 'design' | 'base' (beide bleiben gemountet)
+  const [baseCopied, setBaseCopied] = useState(false); // Feedback für „Als Code kopieren"
+  const [imgBarOpen, setImgBarOpen] = useState(true); // Bild-Leiste über der Vorschau auf/zu
+  const [busy, setBusy] = useState(''); // laufender Export (Label) → Kopfleisten-Buttons sperren
   const [zoom, setZoom] = useState(null); // null = Fit (per-board default scale)
   const [imagesByTheme, setImagesByTheme] = useState({}); // Bilder sind ObjectURLs → nicht persistierbar
   const [colorsByTheme, setColorsByTheme] = useState(saved.colorsByTheme || {}); // per-theme palette overrides
@@ -1257,14 +2128,28 @@ function App() {
   const [fontByTheme, setFontByTheme] = useState(saved.fontByTheme || {}); // Schrift-Overrides pro Theme: { title, body }
   // Auto-Save: Texte, Theme-Auswahl, Farb-, Back-Text-, Überschrift- und Schrift-Overrides bei jeder Änderung in localStorage spiegeln
   useEffect(() => {
-    try { localStorage.setItem(LS_KEY, JSON.stringify({ themeKey, t, colorsByTheme, blurbByTheme, hookByTheme, fontByTheme })); } catch (e) {}
-  }, [themeKey, t, colorsByTheme, blurbByTheme, hookByTheme, fontByTheme]);
+    try { localStorage.setItem(LS_KEY, JSON.stringify({ themeKey, t, colorsByTheme, blurbByTheme, hookByTheme, fontByTheme, uiMode })); } catch (e) {}
+  }, [themeKey, t, colorsByTheme, blurbByTheme, hookByTheme, fontByTheme, uiMode]);
   function resetSettings() {
     if (!window.confirm('Alle gespeicherten Einstellungen zurücksetzen?')) return;
     try { localStorage.removeItem(LS_KEY); } catch (e) {}
     setT(DEFAULTS); setColorsByTheme({}); setBlurbByTheme({}); setHookByTheme({}); setFontByTheme({}); setThemeKey('kids');
   }
-  const [panelW, setPanelW] = useState(308); // resizable left editor width
+  // Base-Infos als DEFAULTS-Snippet in die Zwischenablage — einmal in den Code gepflegt = permanent
+  // in beiden Kopien, unabhängig von localStorage/file://.
+  function copyBaseCode() {
+    const lines = BASE_INFO_KEYS.map(k => `  ${k}: ${JSON.stringify(t[k])},`).join('\n');
+    copyText('/* ── Base Infos — in DEFAULTS einfügen/ersetzen ── */\n' + lines);
+    setBaseCopied(true); setTimeout(() => setBaseCopied(false), 1800);
+  }
+  // Avatar-Bild als Data-URI in die Base-Infos legen (danach über „Als Code kopieren" fest einbackbar).
+  function readBaseImg(file, key) {
+    const fr = new FileReader();
+    fr.onload = () => set(key, fr.result);
+    fr.readAsDataURL(file);
+  }
+  const [panelW, setPanelW] = useState(308);   // linke Sidebar (Inhalt) — ziehbar
+  const [panelRW, setPanelRW] = useState(300); // rechte Sidebar (Template) — ziehbar
   const [savingProject, setSavingProject] = useState(false);
   const projectFileRef = useRef(null);
   const refs = useRef({});
@@ -1274,7 +2159,10 @@ function App() {
   const fontSel = fontByTheme[themeKey] || {};
   if (fontSel.title) view.titleFont = fontSel.title; // greift via themeFont() in allen Artboards (Titel + Back-Überschrift + Autor)
   if (fontSel.body)  view.bodyFont  = fontSel.body;  // greift via themeBody() (Klappentext + What's-Inside)
-  const imgs = imagesByTheme[themeKey] || { hero:null, heroPBN:null, pages:Array(NPAGES).fill(null) };
+  // Spread über EMPTY_IMGS: alte Projekte ohne baLine/baColor bekommen leere Slots statt undefined.
+  const imgs = { ...emptyImgs(), ...(imagesByTheme[themeKey] || {}) };
+  const imgSlots = NPAGES + 2 + NPAIRS * 2;
+  const imgFilled = [imgs.hero, imgs.heroPBN, ...imgs.pages, ...(imgs.baLine || []), ...(imgs.baColor || [])].filter(Boolean).length;
   const set = (k, v) => setT(s => ({ ...s, [k]: v }));
   const setColor = (token, val) => setColorsByTheme(m => ({ ...m, [themeKey]: { ...(m[themeKey] || {}), [token]: val } }));
   const applyPalette = p => setColorsByTheme(m => ({ ...m, [themeKey]: { ...p } }));
@@ -1295,10 +2183,15 @@ function App() {
   const fontEdited = !!(fontSel.title || fontSel.body);
   const setFont = (which, val) => setFontByTheme(m => ({ ...m, [themeKey]: { ...(m[themeKey] || {}), [which]: val } }));
   const resetFonts = () => setFontByTheme(m => { const n = { ...m }; delete n[themeKey]; return n; });
-  function startResize(e) {
+  // side = 'left' (Inhalt) | 'right' (Template). Rechts wächst die Sidebar beim Ziehen nach links.
+  function startResize(e, side = 'left') {
     e.preventDefault();
-    const startX = e.clientX, startW = panelW;
-    const move = ev => setPanelW(Math.min(640, Math.max(240, startW + (ev.clientX - startX))));
+    const startX = e.clientX, startW = side === 'right' ? panelRW : panelW;
+    const move = ev => {
+      const d = ev.clientX - startX;
+      if (side === 'right') setPanelRW(Math.min(560, Math.max(220, startW - d)));
+      else                  setPanelW(Math.min(640, Math.max(240, startW + d)));
+    };
     const up = () => { window.removeEventListener('mousemove', move); window.removeEventListener('mouseup', up); document.body.style.userSelect = ''; };
     window.addEventListener('mousemove', move); window.addEventListener('mouseup', up);
     document.body.style.userSelect = 'none';
@@ -1320,24 +2213,35 @@ function App() {
     const pages = imgs.pages.slice(); pages[i] = url;
     setImagesByTheme(m => ({ ...m, [themeKey]: { ...imgs, pages } }));
   }
+  // Before-&-After-Paar: which = 'baLine' (Vorlage) | 'baColor' (koloriert).
+  function uploadPair(which, i, file) {
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    const arr = (imgs[which] || Array(NPAIRS).fill(null)).slice(); arr[i] = url;
+    setImagesByTheme(m => ({ ...m, [themeKey]: { ...imgs, [which]:arr } }));
+  }
   // Bilder des aktiven Themes leeren: ObjectURLs freigeben (kein Reststand) und Slots zurücksetzen.
   function resetImages() {
     const cur = imagesByTheme[themeKey];
-    if (cur) [cur.hero, cur.heroPBN, ...(cur.pages || [])].forEach(u => { if (u) { try { URL.revokeObjectURL(u); } catch (e) {} } });
-    setImagesByTheme(m => ({ ...m, [themeKey]: { hero:null, heroPBN:null, pages:Array(NPAGES).fill(null) } }));
+    if (cur) [cur.hero, cur.heroPBN, ...(cur.pages || []), ...(cur.baLine || []), ...(cur.baColor || [])]
+      .forEach(u => { if (u) { try { URL.revokeObjectURL(u); } catch (e) {} } });
+    setImagesByTheme(m => ({ ...m, [themeKey]: emptyImgs() }));
   }
 
   // [format key, html2canvas scale, export label] — drives every export path.
+  // Thumb/Gallery/Teaser werden nur im Voll-Modus gerendert → im Basis-Modus auch nicht
+  // exportiert (sonst zählen die Export-Buttons Boards mit, die es gar nicht gibt).
   const EXPORT_JOBS = [
     ['front', 4.85, 'Cover'], ['back', 4.85, 'Back Cover'], ['whatsinside', 4.85, "What's Inside"],
-    ['thumb', 2, 'Thumb'], ['gallery', 2, 'Gallery'], ['teaser', 2, 'Teaser'],
+    ...(uiMode === 'voll' ? [['thumb', 2, 'Thumb'], ['gallery', 2, 'Gallery'], ['teaser', 2, 'Teaser']] : []),
   ];
   // Etsy-Shop-Assets (1:1) — je 4. Element = Sicht-Toggle in t; nur eingeblendete werden exportiert.
   const SHOP_JOBS = [
     ['etsyhero', 2, 'Etsy Hero', 'shopHero'], ['bundlegrid', 2, 'In This Bundle', 'shopBundle'],
-    ['beforeafter', 2, 'Linework + Colored', 'shopBeforeAfter'], ['difficulty', 2, 'Difficulty', 'shopDifficulty'],
+    ['beforeafter', 2, 'Linework + Colored', 'shopBeforeAfter'],
+    ['bagrid', 2, 'Before & After', 'shopBAGrid'],
     ['printdigital', 2, 'Print or Digital', 'shopFormats'], ['humanloop', 2, 'Human in the Loop', 'shopHuman'],
-    ['about', 2, 'About', 'shopAbout'],
+    ['about', 2, 'About', 'shopAbout'], ['comparison', 2, 'Comparison', 'shopComparison'],
   ];
   const allJobs = [...EXPORT_JOBS, ...SHOP_JOBS.filter(j => t[j[3]])];
   function exportBase() {
@@ -1394,42 +2298,41 @@ function App() {
       await new Promise(r => setTimeout(r, 350));
     }
   }
-  async function exportZIP() {
-    const zip = new JSZip();
+  // Komplett-ZIP: druckfertige PNGs (Ordner PNG/) UND die cleanen Web-WebPs ohne Badges
+  // (Ordner WEB/) in einer Datei — der Regelfall, deshalb ein einziger Button.
+  async function exportZipAll() {
     const base = exportBase();
+    const zip = new JSZip();
     for (const [fmt, sc, lbl] of allJobs) {
       const node = refs.current[fmt + '-' + themeKey]?.current; if (!node) continue;
       const canvas = await captureNode(node, sc);
       const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
-      zip.file(`${base} ${lbl}.png`, blob);
+      zip.file(`PNG/${base} ${lbl}.png`, blob);
+    }
+    const prev = { showBadges: t.showBadges, promoBadge: t.promoBadge };
+    ReactDOM.flushSync(() => setT(s => ({ ...s, showBadges:false, promoBadge:false })));
+    try {
+      for (const [fmt, , lbl] of allJobs) {
+        const node = refs.current[fmt + '-' + themeKey]?.current; if (!node) continue;
+        const full = await captureNode(node, 2); // 2× Quelle, dann sauber heruntergerechnet
+        const { blob, ext } = await canvasToWebpBlob(scaleCanvasToMax(full, WEB_MAX_EDGE));
+        zip.file(`WEB/${base} ${lbl} web.${ext}`, blob);
+      }
+    } finally {
+      ReactDOM.flushSync(() => setT(s => ({ ...s, ...prev })));
     }
     const zipBlob = await zip.generateAsync({ type:'blob' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(zipBlob); a.download = `${base} Assets.zip`;
     a.click(); URL.revokeObjectURL(a.href);
   }
-  // Shop-/Web-Export: cleane, kleine WebP-Bilder OHNE Badges für Shop-Listings.
-  // flushSync schaltet Badges (und den Promo-Stempel) synchron ab, rendert die Artboards
-  // neu, exportiert in ~1200px WebP und stellt danach den vorherigen Stand wieder her.
-  async function exportWebClean() {
-    const base = exportBase();
-    const prev = { showBadges: t.showBadges, promoBadge: t.promoBadge };
-    ReactDOM.flushSync(() => setT(s => ({ ...s, showBadges:false, promoBadge:false })));
-    try {
-      const zip = new JSZip();
-      for (const [fmt, , lbl] of allJobs) {
-        const node = refs.current[fmt + '-' + themeKey]?.current; if (!node) continue;
-        const full = await captureNode(node, 2); // 2× Quelle, dann sauber heruntergerechnet
-        const { blob, ext } = await canvasToWebpBlob(scaleCanvasToMax(full, WEB_MAX_EDGE));
-        zip.file(`${base} ${lbl} web.${ext}`, blob);
-      }
-      const zipBlob = await zip.generateAsync({ type:'blob' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(zipBlob); a.download = `${base} Web.zip`;
-      a.click(); URL.revokeObjectURL(a.href);
-    } finally {
-      ReactDOM.flushSync(() => setT(s => ({ ...s, ...prev })));
-    }
+  // Export mit Status-Label in der Kopfleiste; sperrt solange die übrigen Export-Buttons.
+  async function run(label, fn) {
+    if (busy) return;
+    setBusy(label + ' …');
+    try { await fn(); }
+    catch (e) { console.error(e); window.alert('Export fehlgeschlagen: ' + (e && e.message ? e.message : e)); }
+    finally { setBusy(''); }
   }
 
   // Kompletten Stand (alle Themes: Texte, Farben, Schriften UND Bilder) als .json sichern.
@@ -1463,7 +2366,7 @@ function App() {
       // Alte ObjectURLs freigeben, bevor sie ersetzt werden (kein Speicher-Leck).
       Object.values(imagesByTheme || {}).forEach(v => {
         if (!v) return;
-        [v.hero, v.heroPBN, ...(v.pages || [])].forEach(u => {
+        [v.hero, v.heroPBN, ...(v.pages || []), ...(v.baLine || []), ...(v.baColor || [])].forEach(u => {
           if (u && typeof u === 'string' && u.startsWith('blob:')) { try { URL.revokeObjectURL(u); } catch (e) {} }
         });
       });
@@ -1478,25 +2381,55 @@ function App() {
     fr.readAsText(file);
   }
 
+  // Sektion mit Umfangs-Tier: basis = immer sichtbar, voll = nur im Voll-Modus.
+  // WICHTIG: Identität über useCallback stabil halten. Wäre Sec eine bei jedem Render neu
+  // erzeugte Arrow-Function, würde React den kompletten Sektions-Teilbaum bei jedem Tastendruck
+  // aus- und wieder einhängen → Fokusverlust + Scroll-Sprung nach oben im Panel/Overlay.
+  const Sec = React.useCallback(({ tier, title, children }) =>
+    (uiMode === 'voll' || tier === 'basis')
+      ? <div className="sec"><div className="sec-t">{title}</div>{children}</div>
+      : null, [uiMode]);
+
   return (<div className="app">
     <header className="app-header">
-      <h1><span className="ac">Cover</span> Designer <span style={{fontSize:'.9rem',opacity:.6}}>v2</span></h1>
-      <span className="sub">Ria's Color Labs · 9 Themes</span>
-    </header>
-    <div className="app-body">
-      <aside className="panel" style={{ width:panelW }}>
-        <div className="sec">
-          <div className="sec-t">Theme</div>
-          <div className="themes">
-            {Object.keys(THEMES).map(k => (
-              <button key={k} className={'theme-btn' + (k === themeKey ? ' on' : '')} onClick={() => setThemeKey(k)}>{k}</button>))}
-          </div>
+      <h1><span className="ac">Cover</span> Designer <span className="v">v2</span></h1>
+      <nav className="tabs">
+        <button className={tab === 'design' ? 'on' : ''} onClick={() => setTab('design')}>Design</button>
+        <button className={tab === 'base' ? 'on' : ''} onClick={() => setTab('base')}>✎ Base Infos</button>
+      </nav>
+      <div className="hgrp">
+        <span className="hgrp-l">Export</span>
+        <button className="hbtn primary" disabled={!!busy} onClick={() => run('ZIP komplett', exportZipAll)}>
+          ZIP komplett ({allJobs.length} PNG + WebP)</button>
+        <button className="hbtn" disabled={!!busy} onClick={() => run('A4-PDF', () => exportPDF('a4'))}>A4-PDF</button>
+        <button className="hbtn" disabled={!!busy} onClick={() => run('US-Letter-PDF', () => exportPDF('letter'))}>US-Letter</button>
+        <button className="hbtn" disabled={!!busy} onClick={() => run('KDP-Einzel-PDFs', exportKDP)}>KDP einzeln</button>
+        <button className="hbtn" disabled={!!busy} onClick={() => run('PNG einzeln', exportAllPNG)}>PNG einzeln</button>
+      </div>
+      <div className="hgrp">
+        <span className="hgrp-l">Projekt</span>
+        <button className="hbtn" disabled={savingProject} onClick={saveProject}>{savingProject ? 'Speichere …' : '💾 Speichern'}</button>
+        <button className="hbtn" onClick={() => projectFileRef.current && projectFileRef.current.click()}>📂 Laden</button>
+        <input ref={projectFileRef} type="file" accept="application/json,.json" hidden
+          onChange={e => { const f = e.target.files[0]; if (f) loadProject(f); e.target.value = ''; }} />
+      </div>
+      <div className="header-tools">
+        {busy && <span className="busy">⏳ {busy}</span>}
+        <div className="header-mode">
+          <button className={uiMode === 'basis' ? 'on' : ''} onClick={() => setUiMode('basis')}>Basis</button>
+          <button className={uiMode === 'voll' ? 'on' : ''} onClick={() => setUiMode('voll')}>Voll</button>
         </div>
-        <div className="sec">
-          <div className="sec-t">Texte</div>
+      </div>
+    </header>
+
+    {/* ── Design-Ansicht: links Inhalt, Mitte Bilder + Vorschau, rechts Template ── */}
+    <div className={'view' + (tab === 'design' ? ' on' : '')}>
+      <aside className="panel" style={{ width:panelW }}>
+        <div className="panel-h">Inhalt<span>Texte, Badges & Assets dieses Covers</span></div>
+
+        <Sec tier="basis" title="Texte">
           <div className="row"><label>Titel</label><input type="text" value={t.title} onChange={e => set('title', e.target.value)} /></div>
           <div className="row"><label>Untertitel</label><textarea value={t.subtitle} onChange={e => set('subtitle', e.target.value)} /></div>
-          <div className="row"><label>Autor</label><input type="text" value={t.author} onChange={e => set('author', e.target.value)} /></div>
           <div className="row">
             <label>Back-Überschrift (eine Zeile = eine Headline-Zeile){hookEdited && <span style={{ color:'var(--gold)', textTransform:'none', letterSpacing:0 }}> · angepasst</span>}</label>
             <textarea value={hookText} placeholder={"z.B.\nA world\nin color"} onChange={e => setHook(e.target.value)} />
@@ -1508,14 +2441,246 @@ function App() {
             <textarea value={blurbVal} placeholder="Klappentext auf der Rückseite…" onChange={e => setBlurb(e.target.value)} />
             {blurbEdited && <button className="btn sec-btn" style={{ marginTop:4, padding:'5px 8px', fontSize:'.7rem' }} onClick={resetBlurb}>↺ Theme-Standard übernehmen</button>}
           </div>
-          <div className="row"><label>Seiten / Motive</label><input type="number" value={t.pageCount} onChange={e => set('pageCount', e.target.value)} /></div>
-          <div className="row"><label>Alter</label><input type="text" value={t.ageRange} onChange={e => set('ageRange', e.target.value)} /></div>
+          <div className="row w-s"><label>Seiten / Motive</label><input type="number" value={t.pageCount} onChange={e => set('pageCount', e.target.value)} /></div>
+          <div className="row w-m"><label>Serien-Schwierigkeit (Ampel)</label>
+            <select value={t.seriesLevel} onChange={e => set('seriesLevel', e.target.value)}>
+              <option value="easy">Easy</option>
+              <option value="medium">Medium</option>
+              <option value="expert">Expert</option>
+            </select></div>
+          <div className="hint">Erscheint als Ampel-Badge auf dem Cover. Ein-/Ausblenden & Position unter „Badges & Stempel".</div>
+        </Sec>
+
+        <Sec tier="basis" title="Badges & Stempel">
           <label className="check"><input type="checkbox" checked={t.showBadges} onChange={e => set('showBadges', e.target.checked)} /> Badges anzeigen (Master)</label>
-          <div className="row"><label>Webseite</label><input type="text" value={t.website} placeholder="z.B. rias-colorlabs.com" onChange={e => set('website', e.target.value)} /></div>
-          <label className="check"><input type="checkbox" checked={t.showWebsite} onChange={e => set('showWebsite', e.target.checked)} /> Webseite anzeigen</label>
+          <label className="check"><input type="checkbox" checked={t.showWebsite} onChange={e => set('showWebsite', e.target.checked)} /> Webseite / Wasserzeichen anzeigen</label>
+          <div className="hint">Autor & Webseiten-Text stehen im Tab „✎ Base Infos" — hier nur der Ein/Aus-Schalter.</div>
+
+          <div className="sec-t" style={{ marginTop:6 }}>Serien-Ampel</div>
+          <label className="check"><input type="checkbox" checked={t.showLevelBadge !== false} onChange={e => set('showLevelBadge', e.target.checked)} /> Ampel anzeigen</label>
+          <PositionSelect label="Position" value={t.posLevel} onChange={v => set('posLevel', v)} />
+
+          <div className="sec-t" style={{ marginTop:6 }}>Vol. / Band</div>
+          <div className="row w-s"><label>Text (leer = aus)</label><input type="text" value={t.volumeText} placeholder="z.B. VOL 1" onChange={e => set('volumeText', e.target.value)} /></div>
+          <PositionSelect label="Position" value={t.posVol} onChange={v => set('posVol', v)} />
+
+          <div className="sec-t" style={{ marginTop:6 }}>Variant-Badge (Typ)</div>
+          <div className="row w-m"><label>Typ</label>
+            <select value={t.variantType} onChange={e => set('variantType', e.target.value)}>
+              <option value="none">Keins</option>
+              {VARIANT_PRESETS.map(v => <option key={v} value={v}>{v}</option>)}
+              <option value="CUSTOM">Eigener Text…</option>
+            </select></div>
+          {t.variantType === 'CUSTOM' &&
+            <div className="row w-m"><label>Text</label><input type="text" value={t.variantCustom} placeholder="z.B. Premium" onChange={e => set('variantCustom', e.target.value)} /></div>}
+          <PositionSelect label="Position" value={t.posVariant} onChange={v => set('posVariant', v)} />
+
+          <div className="sec-t" style={{ marginTop:6 }}>Promo-Stempel</div>
+          <label className="check"><input type="checkbox" checked={t.promoBadge} onChange={e => set('promoBadge', e.target.checked)} /> Aktiv</label>
+          {t.promoBadge && <>
+            <div className="row w-s"><label>Text</label><input type="text" value={t.promoBadgeText} onChange={e => set('promoBadgeText', e.target.value)} /></div>
+            <div className="row w-m"><label>Form</label>
+              <select value={t.promoBadgeShape} onChange={e => set('promoBadgeShape', e.target.value)}>
+                <option value="circle">Kreis</option>
+                <option value="burst">Burst (Stempel)</option>
+                <option value="diamond">Raute</option>
+              </select></div>
+            <PositionSelect label="Position" value={t.posPromo} onChange={v => set('posPromo', v)} />
+            <div className="row"><label>Farben</label>
+              <div className="colors">
+                <label><input type="color" value={t.promoBadgeColor} onChange={e => set('promoBadgeColor', e.target.value)} /> Badge</label>
+                <label><input type="color" value={t.promoBadgeTextColor} onChange={e => set('promoBadgeTextColor', e.target.value)} /> Text</label>
+              </div></div>
+          </>}
+        </Sec>
+
+        <Sec tier="voll" title="Feature-Pills (Teaser + Back-Fallback)">
+          <div className="row"><textarea rows={4} value={t.featuresCustom}
+            placeholder={'Leer = Theme-Default:\n' + theme.back.features.join('\n')}
+            onChange={e => set('featuresCustom', e.target.value)} /></div>
+          <div className="hint">Eine Pille pro Zeile, überschreibt die Theme-Defaults (z.B. „Single-sided"). Leer lassen = Preset. Platzhalter: {'{n}'} = Seitenzahl. Auf dem Teaser werden die ersten 3 gezeigt.</div>
+        </Sec>
+
+        <Sec tier="voll" title="USPs (Back-Pills + What's Inside)">
+          {USP_KEYS.map(([k, lbl]) => (
+            <label key={k} className="check"><input type="checkbox" checked={t[k] === true} onChange={e => set(k, e.target.checked)} /> {lbl}</label>))}
+          <label className="check"><input type="checkbox" checked={t.uspMotifs === true} onChange={e => set('uspMotifs', e.target.checked)} /> Motive</label>
+          {t.uspMotifs && <div className="row"><input type="text" value={t.uspMotifsText} placeholder="z.B. Dragons, Mermaids" onChange={e => set('uspMotifsText', e.target.value)} /></div>}
+          <label className="check"><input type="checkbox" checked={t.uspStyle === true} onChange={e => set('uspStyle', e.target.checked)} /> Stil</label>
+          {t.uspStyle && <div className="row"><input type="text" value={t.uspStyleText} placeholder="z.B. cute, soft-shaded" onChange={e => set('uspStyleText', e.target.value)} /></div>}
+          <label className="check"><input type="checkbox" checked={t.uspBonusPages === true} onChange={e => set('uspBonusPages', e.target.checked)} /> Bonus-Seiten</label>
+          {t.uspBonusPages && <div className="files-grid">
+            <div className="row"><input type="text" value={t.uspBonusPagesCount} placeholder="Anzahl" onChange={e => set('uspBonusPagesCount', e.target.value)} /></div>
+            <div className="row"><input type="text" value={t.uspBonusPagesText} placeholder="z.B. Mandalas" onChange={e => set('uspBonusPagesText', e.target.value)} /></div>
+          </div>}
+        </Sec>
+
+        <Sec tier="basis" title="Shop-Assets (1:1, Etsy)">
+          <div className="hint">Pro-Cover-Square-Assets aus denselben Texten & Bildern. Nur angehakte werden gerendert und landen mit in ZIP/PNG/Web-Export.</div>
+          {[['shopHero','Hero / Cover','Haupt-Listingbild (LC) — das erste Bild im Etsy-Listing'],
+            ['shopBundle','Motiv-Grid „In This Bundle"','Übersicht aller enthaltenen Motive'],
+            ['shopBeforeAfter','Linework + koloriert','Vorlage neben koloriertem Ergebnis'],
+            ['shopBAGrid','Before & After (Raster)','Mehrere Vorher/Nachher-Paare — Details unten in „Before & After"']].map(([k, lbl, desc]) => (
+            <div key={k} style={{ display:'flex', flexDirection:'column', gap:2 }}>
+              <label className="check"><input type="checkbox" checked={t[k] === true} onChange={e => set(k, e.target.checked)} /> {lbl}</label>
+              <div className="hint" style={{ marginLeft:26 }}>{desc}</div>
+            </div>))}
+          <div className="row w-s"><label>Seiten-Wort (Stempel)</label><input type="text" value={t.pageNoun} placeholder="z.B. Pages" onChange={e => set('pageNoun', e.target.value)} /></div>
+          <div className="hint">Fest gepflegte Assets (Print or Digital, Human in the Loop, About, Comparison) liegen im Tab „✎ Base Infos".</div>
+        </Sec>
+
+        <Sec tier="voll" title="Before & After (Raster)">
+          <div className="hint">Texte & Anordnung des Etsy-Rasters. Die Bildpaare liegen in der Bild-Leiste über der Vorschau; Paar 1 nutzt ersatzweise Hero-PBN + Hero.</div>
+          <div className="row w-m"><label>Anordnung</label>
+            <select value={t.baLayout} onChange={e => set('baLayout', e.target.value)}>
+              <option value="rows3">3 Reihen (je 1 Paar)</option>
+              <option value="grid2x2">2×2 (4 Paare)</option>
+            </select></div>
+          <div className="row"><label>Überschrift</label>
+            <textarea rows={2} value={t.baHeadline} onChange={e => set('baHeadline', e.target.value)} /></div>
+          <div className="hint">Eine Zeile = eine Headline-Zeile, letzte Zeile in Akzentfarbe.</div>
+          <label className="check"><input type="checkbox" checked={t.baShowFeatures === true} onChange={e => set('baShowFeatures', e.target.checked)} /> Icon-Spalte (Vorteile) rechts</label>
+          {t.baShowFeatures && <>
+            <div className="row"><label>Vorteile</label>
+              <textarea rows={4} value={t.baFeatures} onChange={e => set('baFeatures', e.target.value)} /></div>
+            <div className="hint">Max. 4 Zeilen im Format <code>Titel :: Unterzeile</code>. <code>{'{pages}'}</code> wird durch Seitenzahl + Seiten-Wort ersetzt. Icons in fester Reihenfolge: Drucker, PDF, Seiten, Download.</div>
+          </>}
+          <div className="row"><label>Zielgruppen-Zeile</label>
+            <input type="text" value={t.baFooter} placeholder="leer = ausblenden" onChange={e => set('baFooter', e.target.value)} /></div>
+          <div className="hint">„3 Reihen" nutzt Paar 1–3, „2×2" alle vier. Die Bild-Slots liegen in der Bild-Leiste über der Vorschau.</div>
+        </Sec>
+      </aside>
+      <div className="resizer" onMouseDown={e => startResize(e, 'left')} title="Inhalt-Sidebar breiter/schmaler ziehen" />
+
+      <main className="stage">
+        {/* Bild-Leiste: alle Drop-Slots des aktiven Themes, spaltenweise über der Vorschau. */}
+        <div className="imagebar">
+          <div className="ib-head" onClick={() => setImgBarOpen(o => !o)}>
+            <span className="t">Bilder · {themeKey}</span>
+            <span className="c">{imgFilled} / {imgSlots} Slots belegt</span>
+            <span className="x">{imgBarOpen ? '▾ einklappen' : '▸ ausklappen'}</span>
+          </div>
+          {imgBarOpen && <>
+            <div className="ib-cols">
+              <div className="ib-col">
+                <div className="ib-t">Hero / Color</div>
+                <div className="ib-grid c1">
+                  <DropFile label="Hero — colored" filled={!!imgs.hero} onFile={uploadHero} />
+                  <DropFile label="Hero — PBN / lineart" filled={!!imgs.heroPBN} onFile={uploadHeroPBN} />
+                </div>
+              </div>
+              <div className="ib-col">
+                <div className="ib-t">Back / Gallery</div>
+                <div className="ib-grid c4">
+                  {Array.from({ length:NPAGES }).map((_, i) => (
+                    <DropFile key={i} label={i < 4 ? `Back ${i+1}` : `Gal ${i-3}`} filled={!!imgs.pages[i]} onFile={f => uploadPage(i, f)} />))}
+                </div>
+              </div>
+              <div className="ib-col">
+                <div className="ib-t">Before &amp; After — 4 Paare</div>
+                <div className="ib-grid c4">
+                  {Array.from({ length:NPAIRS }).map((_, i) => (
+                    <div className="ib-pair" key={i}>
+                      <span className="pl">Paar {i+1}</span>
+                      <DropFile label="Vorlage" filled={!!imgs.baLine[i]} onFile={f => uploadPair('baLine', i, f)} />
+                      <DropFile label="koloriert" filled={!!imgs.baColor[i]} onFile={f => uploadPair('baColor', i, f)} />
+                    </div>))}
+                </div>
+              </div>
+            </div>
+            <div className="ib-foot">
+              <button className="ib-btn" onClick={resetImages}>↺ Bilder zurücksetzen ({themeKey})</button>
+              <div className="ib-set"><label>Asset-Format</label>
+                <select value={t.assetAspect} onChange={e => set('assetAspect', e.target.value)}>
+                  <option value="portrait">Hochkant (3:4)</option>
+                  <option value="square">Quadrat (1:1)</option>
+                  <option value="wide">Quer (4:3)</option>
+                </select></div>
+              <div className="ib-set"><label>Anpassung</label>
+                <select value={t.assetFit} onChange={e => set('assetFit', e.target.value)}>
+                  <option value="cover">Füllen (Zuschnitt)</option>
+                  <option value="contain">Einpassen (ganzes Bild)</option>
+                </select></div>
+              <span className="hint">Klicken oder Bild hineinziehen · pro Theme. Back/What's-Inside nutzen Bild 1–4, Gallery alle 8.
+                Format/Anpassung gelten für Back, What's Inside &amp; Gallery.</span>
+            </div>
+          </>}
         </div>
-        <div className="sec">
-          <div className="sec-t">Farben ({themeKey})</div>
+        <div className="stage-bar">
+          <span className="zl">Zoom</span>
+          {[null, 0.5, 0.75, 1.0].map(z => (
+            <button key={String(z)} className={'zoom-btn' + (zoom === z ? ' on' : '')} onClick={() => setZoom(z)}>
+              {z === null ? 'Fit' : Math.round(z * 100) + '%'}</button>))}
+        </div>
+        <div className="boards">
+          <div className="board-group">
+            <div className="board-group-head">
+              <span className="g-t">Gumroad · Direktverkauf</span>
+              <span className="g-sub">US-Letter-Cover-Set + Marketing-Formate</span>
+            </div>
+            <div className="board-row">
+              <Board key={'front-' + themeKey} w={PAGE_W} h={PAGE_H} scale={zoom != null ? zoom : 0.42} label="US Letter Front" pngScale={4.85} fileBase={'front-' + themeKey} registerRef={registerRef}>
+                <FrontCover theme={view} t={t} hero={imgs.hero} heroPBN={imgs.heroPBN} pages={imgs.pages} /></Board>
+              <Board key={'back-' + themeKey} w={PAGE_W} h={PAGE_H} scale={zoom != null ? zoom : 0.42} label="US Letter Back" pngScale={4.85} fileBase={'back-' + themeKey} registerRef={registerRef}>
+                <BackCover theme={view} t={t} pages={imgs.pages} blurb={blurbVal} hook={hookLines} /></Board>
+              <Board key={'whatsinside-' + themeKey} w={PAGE_W} h={PAGE_H} scale={zoom != null ? zoom : 0.42} label="US Letter What's Inside" pngScale={4.85} fileBase={'whatsinside-' + themeKey} registerRef={registerRef}>
+                <WhatsInsideCover theme={view} t={t} pages={imgs.pages} /></Board>
+              {uiMode === 'voll' && <Board key={'thumb-' + themeKey} w={540} h={540} scale={zoom != null ? zoom : 0.5} label="Thumbnail 1:1" fileBase={'thumb-' + themeKey} registerRef={registerRef}>
+                <ThumbCover theme={view} t={t} hero={imgs.hero} heroPBN={imgs.heroPBN} pages={imgs.pages} /></Board>}
+              {uiMode === 'voll' && <Board key={'gallery-' + themeKey} w={960} h={540} scale={zoom != null ? zoom : 0.42} label="Gallery 16:9" fileBase={'gallery-' + themeKey} registerRef={registerRef}>
+                <GalleryCover theme={view} t={t} pages={imgs.pages} /></Board>}
+              {uiMode === 'voll' && <Board key={'teaser-' + themeKey} w={960} h={540} scale={zoom != null ? zoom : 0.42} label="Teaser 16:9" fileBase={'teaser-' + themeKey} registerRef={registerRef}>
+                <TeaserCover theme={view} t={t} hero={imgs.hero} heroPBN={imgs.heroPBN} pages={imgs.pages} /></Board>}
+            </div>
+          </div>
+
+          <div className="board-divider" />
+
+          <div className="board-group">
+            <div className="board-group-head">
+              <span className="g-t">Etsy · Square-Assets</span>
+              <span className="g-sub">1:1 Listing-Bilder · pro Cover einstellbar</span>
+            </div>
+            <div className="board-row">
+              {t.shopHero && <Board key={'etsyhero-' + themeKey} w={1080} h={1080} scale={zoom != null ? zoom : 0.25} label="Shop · Hero 1:1" fileBase={'etsyhero-' + themeKey} registerRef={registerRef}>
+                <EtsyHeroCover theme={view} t={t} hero={imgs.hero} heroPBN={imgs.heroPBN} pages={imgs.pages} /></Board>}
+              {t.shopBundle && <Board key={'bundlegrid-' + themeKey} w={1080} h={1080} scale={zoom != null ? zoom : 0.25} label="Shop · In This Bundle 1:1" fileBase={'bundlegrid-' + themeKey} registerRef={registerRef}>
+                <BundleGridCover theme={view} t={t} hero={imgs.hero} pages={imgs.pages} /></Board>}
+              {t.shopBeforeAfter && <Board key={'beforeafter-' + themeKey} w={1080} h={1080} scale={zoom != null ? zoom : 0.25} label="Shop · Linework + Colored 1:1" fileBase={'beforeafter-' + themeKey} registerRef={registerRef}>
+                <BeforeAfterCover theme={view} t={t} hero={imgs.hero} heroPBN={imgs.heroPBN} /></Board>}
+              {t.shopBAGrid && <Board key={'bagrid-' + themeKey} w={1080} h={1080} scale={zoom != null ? zoom : 0.25} label="Shop · Before & After 1:1" fileBase={'bagrid-' + themeKey} registerRef={registerRef}>
+                <BeforeAfterGridCover theme={view} t={t} lineArt={imgs.baLine} colored={imgs.baColor} hero={imgs.hero} heroPBN={imgs.heroPBN} /></Board>}
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <div className="resizer" onMouseDown={e => startResize(e, 'right')} title="Template-Sidebar breiter/schmaler ziehen" />
+      <aside className="panel panel-r" style={{ width:panelRW }}>
+        <div className="panel-h">Template<span>Theme, Farben, Schrift, Layout & Muster</span></div>
+
+        <Sec tier="basis" title="Theme">
+          <div className="themes">
+            {Object.keys(THEMES).map(k => {
+              const v = resolveColors(THEMES[k], colorsByTheme[k]);
+              const rad = v.frame === 'arch' ? '40% 40% 2px 2px / 55% 55% 2px 2px' : v.frame === 'round' ? '6px' : '2px';
+              return (
+                <button key={k} className={'theme-btn' + (k === themeKey ? ' on' : '')} onClick={() => setThemeKey(k)} title={k}>
+                  <span className="theme-prev" style={{ background:v.ground }}>
+                    <span className="theme-prev-frame" style={{ background:v.frameBg, border:`1.5px solid ${v.frameBorder}`, borderRadius:rad }} />
+                    <span className="theme-prev-title" style={{ color:v.titleColor, fontFamily:v.titleFont || 'inherit' }}>Title</span>
+                    <span className="theme-prev-dots">
+                      <span className="theme-prev-dot" style={{ background:v.accentColor }} />
+                      <span className="theme-prev-dot" style={{ background:v.badgeBg }} />
+                    </span>
+                  </span>
+                  <span className="theme-name">{k}</span>
+                </button>);
+            })}
+          </div>
+        </Sec>
+
+        <Sec tier="basis" title={<>Farben ({themeKey})</>}>
           <div className="palettes">
             {(PALETTE_PRESETS[themeKey] || []).map((p, i) => {
               const on = COLOR_TOKENS.every(([tok]) => view[tok] === p[tok]);
@@ -1533,9 +2698,9 @@ function App() {
               <label key={tok} className="color-cell"><input type="color" value={view[tok]} onChange={e => setColor(tok, e.target.value)} /> {lbl}</label>))}
           </div>
           <button className="btn sec-btn" onClick={resetColors}>Farben zurücksetzen</button>
-        </div>
-        <div className="sec">
-          <div className="sec-t">Schrift ({themeKey}){fontEdited && <span style={{ color:'var(--gold)' }}> · angepasst</span>}</div>
+        </Sec>
+
+        <Sec tier="basis" title={<>Schrift ({themeKey}){fontEdited && <span style={{ color:'var(--gold)' }}> · angepasst</span>}</>}>
           <div className="row"><label>Titel-Schrift (Titel, Back-Überschrift, Autor)</label>
             <select value={fontSel.title || ''} onChange={e => setFont('title', e.target.value)}>
               {FONT_OPTIONS.map(f => <option key={f.label} value={f.v}>{f.label}</option>)}
@@ -1546,9 +2711,9 @@ function App() {
             </select></div>
           <div className="hint">„Theme-Standard" = die zum Preset gehörende Schrift. Wirkt auf alle Artboards.</div>
           {fontEdited && <button className="btn sec-btn" onClick={resetFonts}>Schrift zurücksetzen</button>}
-        </div>
-        <div className="sec">
-          <div className="sec-t">Cover-Layout & Muster</div>
+        </Sec>
+
+        <Sec tier="basis" title="Cover-Layout & Muster">
           <div className="row"><label>Hero-Anordnung</label>
             <select value={t.frontLayout} onChange={e => set('frontLayout', e.target.value)}>
               <option value="single">Einzeln (groß)</option>
@@ -1559,217 +2724,137 @@ function App() {
             </select></div>
           <div className="hint">Wirkt auf Front, Thumbnail & Teaser. Vollbild: Hero füllt randlos, Titel liegt schräg über der hellen PBN-Seite — ohne Muster/Rahmen (Hero + Hero-PBN für den Split-Effekt laden). Collage/Raster nutzen Hero + Back-Bilder 1–3.</div>
           <div className="row"><label>Hintergrund-Muster</label>
-            <select value={t.bgPattern} onChange={e => set('bgPattern', e.target.value)}>
-              {Object.keys(BG_PATTERNS).map(k => <option key={k} value={k}>{BG_PATTERNS[k].label}</option>)}
+            {/* Muster-Wechsel zieht Größe/Stärke auf die Vorgaben des neuen Musters nach —
+                Raster wollen ~22px, Motive 50–90px, sonst wirken sie gequetscht. */}
+            <select value={t.bgPattern} onChange={e => {
+              const k = e.target.value, def = StudioDesign.PATTERNS[k];
+              set('bgPattern', k);
+              if (def) { set('bgPatternSize', def.cell); set('bgPatternStroke', def.stroke); }
+            }}>
+              <option value="theme">Theme-Standard</option>
+              <option value="none">Keins</option>
+              <optgroup label="Raster">
+                {StudioDesign.patternKeys('basic').map(k => <option key={k} value={k}>{BG_PATTERNS[k].label}</option>)}
+              </optgroup>
+              <optgroup label="Motive">
+                {StudioDesign.patternKeys('motif').map(k => <option key={k} value={k}>{BG_PATTERNS[k].label}</option>)}
+              </optgroup>
             </select></div>
           {BG_PATTERNS[t.bgPattern] && BG_PATTERNS[t.bgPattern].kind && <>
             <div className="files-grid">
               <div className="row"><label>Größe (px)</label>
-                <input type="number" min="4" max="80" value={t.bgPatternSize}
-                  onChange={e => set('bgPatternSize', Math.max(4, Math.min(80, Number(e.target.value) || 22)))} /></div>
+                <input type="number" min="4" max="160" value={t.bgPatternSize}
+                  onChange={e => set('bgPatternSize', Math.max(4, Math.min(160, Number(e.target.value) || 22)))} /></div>
               <div className="row"><label>Deckkraft (0–0.6)</label>
                 <input type="number" min="0" max="0.6" step="0.01" value={t.bgPatternOpacity}
                   onChange={e => set('bgPatternOpacity', Math.max(0, Math.min(0.6, Number(e.target.value) || 0)))} /></div>
             </div>
+            <div className="row w-s"><label>Linienstärke</label>
+              <input type="number" min="0.2" max="8" step="0.1" value={t.bgPatternStroke || StudioDesign.PATTERNS[t.bgPattern].stroke}
+                onChange={e => set('bgPatternStroke', Math.max(0.2, Math.min(8, Number(e.target.value) || 1)))} /></div>
             <label className="check"><input type="checkbox" checked={t.bgPatternAuto} onChange={e => set('bgPatternAuto', e.target.checked)} /> Farbe automatisch (an Grund anpassen)</label>
             {!t.bgPatternAuto &&
               <div className="row"><label>Muster-Farbe</label>
                 <div className="colors"><label><input type="color" value={t.bgPatternColor} onChange={e => set('bgPatternColor', e.target.value)} /> Muster</label></div></div>}
           </>}
-        </div>
-        <div className="sec">
-          <div className="sec-t">Vol. / Band</div>
-          <div className="row"><label>Text (leer = aus)</label><input type="text" value={t.volumeText} placeholder="z.B. VOL 1" onChange={e => set('volumeText', e.target.value)} /></div>
-          <PositionSelect label="Position" value={t.posVol} onChange={v => set('posVol', v)} />
-        </div>
-        <div className="sec">
-          <div className="sec-t">Variant-Badge</div>
-          <div className="row"><label>Typ</label>
-            <select value={t.variantType} onChange={e => set('variantType', e.target.value)}>
-              <option value="none">Keins</option>
-              <option value="Free">Free</option>
-              <option value="Paid">Paid</option>
-              <option value="CUSTOM">Eigener Text…</option>
-            </select></div>
-          {t.variantType === 'CUSTOM' &&
-            <div className="row"><label>Text</label><input type="text" value={t.variantCustom} placeholder="z.B. Premium" onChange={e => set('variantCustom', e.target.value)} /></div>}
-          <PositionSelect label="Position" value={t.posVariant} onChange={v => set('posVariant', v)} />
-        </div>
-        <div className="sec">
-          <div className="sec-t">Promo-Stempel</div>
-          <label className="check"><input type="checkbox" checked={t.promoBadge} onChange={e => set('promoBadge', e.target.checked)} /> Aktiv</label>
-          {t.promoBadge && <>
-            <div className="row"><label>Text</label><input type="text" value={t.promoBadgeText} onChange={e => set('promoBadgeText', e.target.value)} /></div>
-            <div className="row"><label>Form</label>
-              <select value={t.promoBadgeShape} onChange={e => set('promoBadgeShape', e.target.value)}>
-                <option value="circle">Kreis</option>
-                <option value="burst">Burst (Stempel)</option>
-                <option value="diamond">Raute</option>
-              </select></div>
-            <PositionSelect label="Position" value={t.posPromo} onChange={v => set('posPromo', v)} />
-            <div className="row"><label>Farben</label>
-              <div className="colors">
-                <label><input type="color" value={t.promoBadgeColor} onChange={e => set('promoBadgeColor', e.target.value)} /> Badge</label>
-                <label><input type="color" value={t.promoBadgeTextColor} onChange={e => set('promoBadgeTextColor', e.target.value)} /> Text</label>
-              </div></div>
-          </>}
-        </div>
-        <div className="sec">
-          <div className="sec-t">Feature-Pills (Teaser + Back-Fallback)</div>
-          <div className="row"><textarea rows={4} value={t.featuresCustom}
-            placeholder={'Leer = Theme-Default:\n' + theme.back.features.join('\n')}
-            onChange={e => set('featuresCustom', e.target.value)} /></div>
-          <div className="hint">Eine Pille pro Zeile, überschreibt die Theme-Defaults (z.B. „Single-sided"). Leer lassen = Preset. Platzhalter: {'{n}'} = Seitenzahl, {'{age}'} = Alter. Auf dem Teaser werden die ersten 3 gezeigt.</div>
-        </div>
-        <div className="sec">
-          <div className="sec-t">USPs (Back-Pills + What's Inside)</div>
-          {USP_KEYS.map(([k, lbl]) => (
-            <label key={k} className="check"><input type="checkbox" checked={t[k] === true} onChange={e => set(k, e.target.checked)} /> {lbl}</label>))}
-          <label className="check"><input type="checkbox" checked={t.uspMotifs === true} onChange={e => set('uspMotifs', e.target.checked)} /> Motive</label>
-          {t.uspMotifs && <div className="row"><input type="text" value={t.uspMotifsText} placeholder="z.B. Drachen, Meerjungfrauen" onChange={e => set('uspMotifsText', e.target.value)} /></div>}
-          <label className="check"><input type="checkbox" checked={t.uspStyle === true} onChange={e => set('uspStyle', e.target.checked)} /> Stil</label>
-          {t.uspStyle && <div className="row"><input type="text" value={t.uspStyleText} placeholder="z.B. niedlich, soft-shaded" onChange={e => set('uspStyleText', e.target.value)} /></div>}
-          <label className="check"><input type="checkbox" checked={t.uspBonusPages === true} onChange={e => set('uspBonusPages', e.target.checked)} /> Bonus-Seiten</label>
-          {t.uspBonusPages && <div className="files-grid">
-            <div className="row"><input type="text" value={t.uspBonusPagesCount} placeholder="Anzahl" onChange={e => set('uspBonusPagesCount', e.target.value)} /></div>
-            <div className="row"><input type="text" value={t.uspBonusPagesText} placeholder="z.B. Mandalas" onChange={e => set('uspBonusPagesText', e.target.value)} /></div>
-          </div>}
-        </div>
-        <div className="sec">
-          <div className="sec-t">Bilder ({themeKey})</div>
-          <div className="files-grid">
-            <div className="row"><label>Asset-Format</label>
-              <select value={t.assetAspect} onChange={e => set('assetAspect', e.target.value)}>
-                <option value="portrait">Hochkant (3:4)</option>
-                <option value="square">Quadrat (1:1)</option>
-                <option value="wide">Quer (4:3)</option>
-              </select></div>
-            <div className="row"><label>Anpassung</label>
-              <select value={t.assetFit} onChange={e => set('assetFit', e.target.value)}>
-                <option value="cover">Füllen (Zuschnitt)</option>
-                <option value="contain">Einpassen (ganzes Bild)</option>
-              </select></div>
-          </div>
-          <div className="hint">Gilt für Back-Vorschau, What's-Inside & Gallery: passt die Kachelform an deine Bilder an (kein schlechter Mittelausschnitt). „Einpassen" zeigt das ganze Bild.</div>
-          <DropFile label="Hero — colored" filled={!!imgs.hero} onFile={uploadHero} />
-          <DropFile label="Hero — PBN / lineart (Split-Cover)" filled={!!imgs.heroPBN} onFile={uploadHeroPBN} />
-          <div className="files-grid">
-            {Array.from({ length:NPAGES }).map((_, i) => (
-              <DropFile key={i} label={i < 4 ? `Back ${i+1}` : `Gallery ${i-3}`} filled={!!imgs.pages[i]} onFile={f => uploadPage(i, f)} />))}
-          </div>
-          <div className="hint">Klicken oder Bild hineinziehen. Pro Theme. Back/What's-Inside nutzen Bild 1–4, Gallery alle 8. Beliebiges Seitenverhältnis — randlos (Cover-Fit).</div>
-          <button className="btn sec-btn" onClick={resetImages}>Bilder zurücksetzen ({themeKey})</button>
-        </div>
-        <div className="sec">
-          <div className="sec-t">Shop-Assets (1:1, Etsy)</div>
-          <div className="hint">Quadratische Listing-Bilder aus denselben Texten & Bildern. Sichtbare landen mit in ZIP/PNG/Web-Export.</div>
-          {[['shopHero','Hero / Cover'],['shopBundle','Motiv-Grid „In This Bundle"'],['shopBeforeAfter','Linework + koloriert'],
-            ['shopDifficulty','Difficulty-Levels'],['shopFormats','Print or Digital'],['shopHuman','Human in the Loop'],['shopAbout','About Ria & Ray']].map(([k, lbl]) => (
-            <label key={k} className="check"><input type="checkbox" checked={t[k] === true} onChange={e => set(k, e.target.checked)} /> {lbl}</label>))}
-          <div className="row"><label>Seiten-Wort (Stempel)</label><input type="text" value={t.pageNoun} placeholder="z.B. Pages / Motive" onChange={e => set('pageNoun', e.target.value)} /></div>
-        </div>
-        {t.shopDifficulty && <div className="sec">
-          <div className="sec-t">Difficulty-Levels</div>
-          {[['diff1Name','diff1Detail'],['diff2Name','diff2Detail'],['diff3Name','diff3Detail']].map(([nk, dk], i) => (
-            <div key={i} className="files-grid">
-              <div className="row"><input type="text" value={t[nk]} placeholder={`Stufe ${i+1}`} onChange={e => set(nk, e.target.value)} /></div>
-              <div className="row"><input type="text" value={t[dk]} placeholder="Detail" onChange={e => set(dk, e.target.value)} /></div>
-            </div>))}
-          <div className="hint">Leerer Name = Stufe ausblenden.</div>
-        </div>}
-        {t.shopFormats && <div className="sec">
-          <div className="sec-t">Print or Digital</div>
-          <div className="row"><label>Modus</label>
-            <select value={t.formatMode} onChange={e => set('formatMode', e.target.value)}>
-              <option value="both">Beides</option>
-              <option value="print">Nur Print</option>
-              <option value="digital">Nur Digital</option>
-            </select></div>
-          {t.formatMode !== 'digital' && <div className="row"><label>Print-Text</label><textarea value={t.printText} onChange={e => set('printText', e.target.value)} /></div>}
-          {t.formatMode !== 'print' && <div className="row"><label>Digital-Text</label><textarea value={t.digitalText} onChange={e => set('digitalText', e.target.value)} /></div>}
-        </div>}
-        {t.shopHuman && <div className="sec">
-          <div className="sec-t">Human in the Loop</div>
-          <div className="row"><label>Überschrift (eine Zeile = eine Headline-Zeile)</label><textarea value={t.hilHeadline} onChange={e => set('hilHeadline', e.target.value)} /></div>
-          <div className="row"><label>Text</label><textarea value={t.hilText} onChange={e => set('hilText', e.target.value)} /></div>
-          <div className="row"><label>Punkte (eine Zeile = ein Häkchen)</label><textarea value={t.hilBullets} onChange={e => set('hilBullets', e.target.value)} /></div>
-          <div className="hint">Letzte Überschrift-Zeile erscheint in der Akzentfarbe.</div>
-        </div>}
-        {t.shopAbout && <div className="sec">
-          <div className="sec-t">About Ria & Ray</div>
-          <div className="row"><label>Intro</label><textarea value={t.aboutIntro} onChange={e => set('aboutIntro', e.target.value)} /></div>
-          <div className="row"><label>Über Ria</label><textarea value={t.aboutRia} onChange={e => set('aboutRia', e.target.value)} /></div>
-          <div className="row"><label>Über Ray</label><textarea value={t.aboutRay} onChange={e => set('aboutRay', e.target.value)} /></div>
-          <div className="row"><label>Outro (optional)</label><textarea value={t.aboutOutro} onChange={e => set('aboutOutro', e.target.value)} /></div>
-          <div className="files-grid">
-            <div className="row"><label>Marke</label><input type="text" value={t.socialBrand} onChange={e => set('socialBrand', e.target.value)} /></div>
-            <div className="row"><label>Instagram</label><input type="text" value={t.socialInsta} onChange={e => set('socialInsta', e.target.value)} /></div>
-            <div className="row"><label>YouTube</label><input type="text" value={t.socialYoutube} onChange={e => set('socialYoutube', e.target.value)} /></div>
-            <div className="row"><label>E-Mail</label><input type="text" value={t.socialEmail} onChange={e => set('socialEmail', e.target.value)} /></div>
-          </div>
-        </div>}
-        <div className="sec">
-          <div className="sec-t">Export</div>
-          <button className="btn" onClick={() => exportPDF('a4')}>A4-PDF (Front + Back)</button>
-          <button className="btn sec-btn" onClick={() => exportPDF('letter')}>US-Letter-PDF (Front + Back)</button>
-          <button className="btn sec-btn" onClick={exportKDP}>KDP: Einzel-PDFs (US-Letter)</button>
-          <button className="btn sec-btn" onClick={exportZIP}>Alle {allJobs.length} als ZIP</button>
-          <button className="btn sec-btn" onClick={exportAllPNG}>Alle {allJobs.length} als PNG (einzeln)</button>
-          <button className="btn sec-btn" onClick={exportWebClean}>Shop-Bilder (WebP, clean) als ZIP</button>
-          <div className="hint">Einzeln: „PNG"-Button über jedem Artboard. A4/US-Letter/ZIP werden in ~300 DPI gerendert (Shop-Assets 1:1 in {1080*2}px). US-Letter (für KDP/Amazon) wird zentriert eingepasst — schmale weiße Ränder statt Verzerrung. „KDP: Einzel-PDFs" lädt Cover, Back Cover und What's Inside als separate US-Letter-Dateien. Web-Export: alle ohne Badges, ~{WEB_MAX_EDGE}px Langkante als WebP.</div>
-        </div>
-        <div className="sec">
-          <div className="sec-t">Projekt speichern / laden</div>
-          <button className="btn" onClick={saveProject} disabled={savingProject}>
-            {savingProject ? 'Speichere…' : '💾 Cover speichern (JSON)'}</button>
-          <button className="btn sec-btn" onClick={() => projectFileRef.current && projectFileRef.current.click()}>📂 Cover laden (JSON)</button>
-          <input ref={projectFileRef} type="file" accept="application/json,.json" hidden
-            onChange={e => { const f = e.target.files[0]; if (f) loadProject(f); e.target.value = ''; }} />
-          <div className="hint">Sichert <b>alles inkl. Bilder</b> (alle Themes) in eine Datei — anders als das Auto-Speichern, das Bilder verliert. Laden stellt den Stand zum Korrigieren komplett wieder her.</div>
-        </div>
-        <div className="sec">
-          <div className="sec-t">Einstellungen</div>
-          <div className="hint">Texte, Theme & Farben werden automatisch im Browser gespeichert (Bilder nicht).</div>
+          <PatternHandoff t={t} set={set} />
+        </Sec>
+
+        <Sec tier="voll" title="Einstellungen">
+          <div className="hint">Texte, Theme & Farben werden automatisch im Browser gespeichert (Bilder nicht — dafür „Projekt speichern").</div>
           <button className="btn sec-btn" onClick={resetSettings}>Einstellungen zurücksetzen</button>
-        </div>
+        </Sec>
       </aside>
-      <div className="resizer" onMouseDown={startResize} title="Editor breiter/schmaler ziehen" />
-      <main className="stage">
-        <div className="stage-bar">
-          <span className="zl">Zoom</span>
-          {[null, 0.5, 0.75, 1.0].map(z => (
-            <button key={String(z)} className={'zoom-btn' + (zoom === z ? ' on' : '')} onClick={() => setZoom(z)}>
-              {z === null ? 'Fit' : Math.round(z * 100) + '%'}</button>))}
+    </div>
+
+    {/* ── Base-Infos-Ansicht — fest gepflegte Angaben (Autor/Webseite + Etsy-Assets).
+        Bleibt off-screen gemountet, damit ihre Boards für den Export gerendert bleiben. ── */}
+    <div className={'view view-base' + (tab === 'base' ? ' on' : '')}>
+      <div className="base-head">
+        <h2>Base Infos</h2>
+        <span className="bi-sub">Einmalig gepflegt · gilt für alle Cover</span>
+        <button className="base-copy" onClick={copyBaseCode}>{baseCopied ? '✓ Kopiert' : '⧉ Als Code kopieren'}</button>
+      </div>
+      <div className="base-note">
+        Änderungen werden im Browser gespeichert (localStorage). Für <b>dauerhafte</b> Base-Infos, die in beiden Kopien und ohne
+        <code>file://</code>-Grenzen gelten: „⧉ Als Code kopieren" und das Snippet in <code>DEFAULTS</code> (in <code>index.html</code>) einfügen.
+        Tipp: Tool über einen lokalen Server (localhost) statt per Doppelklick öffnen, dann persistiert localStorage zuverlässig.
+      </div>
+      <div className="base-body">
+        <div className="base-fields">
+            <Sec tier="basis" title="Autor & Webseite">
+              <div className="row w-m"><label>Autor</label><input type="text" value={t.author} onChange={e => set('author', e.target.value)} /></div>
+              <div className="row w-m"><label>Webseite (Wasserzeichen)</label><input type="text" value={t.website} placeholder="z.B. rias-colorlabs.com" onChange={e => set('website', e.target.value)} /></div>
+              <div className="hint">Der Ein/Aus-Schalter für das Wasserzeichen sitzt im Design-Tab unter „Badges & Stempel".</div>
+            </Sec>
+            <Sec tier="basis" title="Print or Digital">
+              <label className="check"><input type="checkbox" checked={t.shopFormats === true} onChange={e => set('shopFormats', e.target.checked)} /> Asset in Export einschließen</label>
+              <div className="row w-s"><label>Modus</label>
+                <select value={t.formatMode} onChange={e => set('formatMode', e.target.value)}>
+                  <option value="both">Beides</option>
+                  <option value="print">Nur Print</option>
+                  <option value="digital">Nur Digital</option>
+                </select></div>
+              {t.formatMode !== 'digital' && <div className="row"><label>Print-Text</label><textarea rows={3} value={t.printText} onChange={e => set('printText', e.target.value)} /></div>}
+              {t.formatMode !== 'print' && <div className="row"><label>Digital-Text</label><textarea rows={3} value={t.digitalText} onChange={e => set('digitalText', e.target.value)} /></div>}
+            </Sec>
+            <Sec tier="basis" title="Human in the Loop">
+              <label className="check"><input type="checkbox" checked={t.shopHuman === true} onChange={e => set('shopHuman', e.target.checked)} /> Asset in Export einschließen</label>
+              <div className="row"><label>Überschrift (eine Zeile = eine Headline-Zeile)</label><textarea rows={2} value={t.hilHeadline} onChange={e => set('hilHeadline', e.target.value)} /></div>
+              <div className="row"><label>Text</label><textarea rows={4} value={t.hilText} onChange={e => set('hilText', e.target.value)} /></div>
+              <div className="row"><label>Punkte (eine Zeile = ein Häkchen)</label><textarea rows={3} value={t.hilBullets} onChange={e => set('hilBullets', e.target.value)} /></div>
+              <div className="hint">Letzte Überschrift-Zeile erscheint in der Akzentfarbe.</div>
+            </Sec>
+            <Sec tier="basis" title="About Ria & Ray">
+              <label className="check"><input type="checkbox" checked={t.shopAbout === true} onChange={e => set('shopAbout', e.target.checked)} /> Asset in Export einschließen</label>
+              <div className="row"><label>Intro</label><textarea rows={3} value={t.aboutIntro} onChange={e => set('aboutIntro', e.target.value)} /></div>
+              <div className="row"><label>Über Ria</label><textarea rows={2} value={t.aboutRia} onChange={e => set('aboutRia', e.target.value)} /></div>
+              <div className="row"><label>Über Ray</label><textarea rows={2} value={t.aboutRay} onChange={e => set('aboutRay', e.target.value)} /></div>
+              <div className="row"><label>Outro (optional)</label><textarea rows={3} value={t.aboutOutro} onChange={e => set('aboutOutro', e.target.value)} /></div>
+              <div className="sec-t" style={{ marginTop:4 }}>Bilder (rund, in den Bio-Karten · leer = Initiale)</div>
+              <div className="files-grid">
+                <DropFile label={(t.aboutRiaImg ? '✓ ' : '') + 'Ria-Bild'} filled={!!t.aboutRiaImg} onFile={f => readBaseImg(f, 'aboutRiaImg')} />
+                <DropFile label={(t.aboutRayImg ? '✓ ' : '') + 'Ray-Bild'} filled={!!t.aboutRayImg} onFile={f => readBaseImg(f, 'aboutRayImg')} />
+              </div>
+              {(t.aboutRiaImg || t.aboutRayImg) &&
+                <div style={{ display:'flex', gap:8 }}>
+                  {t.aboutRiaImg && <button className="btn sec-btn" style={{ flex:1 }} onClick={() => set('aboutRiaImg', '')}>Ria-Bild entfernen</button>}
+                  {t.aboutRayImg && <button className="btn sec-btn" style={{ flex:1 }} onClick={() => set('aboutRayImg', '')}>Ray-Bild entfernen</button>}
+                </div>}
+              <div className="files-grid">
+                <div className="row"><label>Marke</label><input type="text" value={t.socialBrand} onChange={e => set('socialBrand', e.target.value)} /></div>
+                <div className="row"><label>Instagram</label><input type="text" value={t.socialInsta} onChange={e => set('socialInsta', e.target.value)} /></div>
+                <div className="row"><label>YouTube</label><input type="text" value={t.socialYoutube} onChange={e => set('socialYoutube', e.target.value)} /></div>
+                <div className="row"><label>E-Mail</label><input type="text" value={t.socialEmail} onChange={e => set('socialEmail', e.target.value)} /></div>
+              </div>
+            </Sec>
+            <Sec tier="basis" title="Comparison (We vs. others)">
+              <label className="check"><input type="checkbox" checked={t.shopComparison === true} onChange={e => set('shopComparison', e.target.checked)} /> Asset in Export einschließen</label>
+              <div className="row w-m"><label>Eyebrow</label><input type="text" value={t.cmpEyebrow} onChange={e => set('cmpEyebrow', e.target.value)} /></div>
+              <div className="row"><label>Titel (eine Zeile = eine Headline-Zeile)</label><textarea rows={2} value={t.cmpTitle} onChange={e => set('cmpTitle', e.target.value)} /></div>
+              <div className="row"><label>Untertitel</label><textarea rows={2} value={t.cmpSub} onChange={e => set('cmpSub', e.target.value)} /></div>
+              <div className="files-grid">
+                <div className="row"><label>Spalte „Us"</label><input type="text" value={t.cmpUsName} onChange={e => set('cmpUsName', e.target.value)} /></div>
+                <div className="row"><label>Spalte „Them"</label><input type="text" value={t.cmpThemName} onChange={e => set('cmpThemName', e.target.value)} /></div>
+              </div>
+              <div className="row"><label>Zeilen (je Zeile: Us-Titel :: Us-Text || Them-Titel :: Them-Text · max. 4)</label><textarea style={{ minHeight:120 }} value={t.cmpRows} onChange={e => set('cmpRows', e.target.value)} /></div>
+              <div className="hint">Trennzeichen: <code>::</code> zwischen Titel und Text, <code>||</code> zwischen Us- und Them-Seite.</div>
+              <div className="row w-m"><label>Revival-Titel</label><input type="text" value={t.cmpRevivalTitle} onChange={e => set('cmpRevivalTitle', e.target.value)} /></div>
+              <div className="row"><label>Revival-Text</label><textarea rows={4} value={t.cmpRevivalText} onChange={e => set('cmpRevivalText', e.target.value)} /></div>
+              <div className="row"><label>Badge (Fußzeile)</label><input type="text" value={t.cmpBadge} onChange={e => set('cmpBadge', e.target.value)} /></div>
+            </Sec>
         </div>
-        <div className="boards">
-          <Board key={'front-' + themeKey} w={630} h={891} scale={zoom != null ? zoom : 0.42} label="A4 Front" fileBase={'front-' + themeKey} registerRef={registerRef}>
-            <FrontCover theme={view} t={t} hero={imgs.hero} heroPBN={imgs.heroPBN} pages={imgs.pages} /></Board>
-          <Board key={'back-' + themeKey} w={630} h={891} scale={zoom != null ? zoom : 0.42} label="A4 Back" fileBase={'back-' + themeKey} registerRef={registerRef}>
-            <BackCover theme={view} t={t} pages={imgs.pages} blurb={blurbVal} hook={hookLines} /></Board>
-          <Board key={'whatsinside-' + themeKey} w={630} h={891} scale={zoom != null ? zoom : 0.42} label="A4 What's Inside" fileBase={'whatsinside-' + themeKey} registerRef={registerRef}>
-            <WhatsInsideCover theme={view} t={t} pages={imgs.pages} /></Board>
-          <Board key={'thumb-' + themeKey} w={540} h={540} scale={zoom != null ? zoom : 0.5} label="Thumbnail 1:1" fileBase={'thumb-' + themeKey} registerRef={registerRef}>
-            <ThumbCover theme={view} t={t} hero={imgs.hero} heroPBN={imgs.heroPBN} pages={imgs.pages} /></Board>
-          <Board key={'gallery-' + themeKey} w={960} h={540} scale={zoom != null ? zoom : 0.42} label="Gallery 16:9" fileBase={'gallery-' + themeKey} registerRef={registerRef}>
-            <GalleryCover theme={view} t={t} pages={imgs.pages} /></Board>
-          <Board key={'teaser-' + themeKey} w={960} h={540} scale={zoom != null ? zoom : 0.42} label="Teaser 16:9" fileBase={'teaser-' + themeKey} registerRef={registerRef}>
-            <TeaserCover theme={view} t={t} hero={imgs.hero} heroPBN={imgs.heroPBN} pages={imgs.pages} /></Board>
-          {t.shopHero && <Board key={'etsyhero-' + themeKey} w={1080} h={1080} scale={zoom != null ? zoom : 0.25} label="Shop · Hero 1:1" fileBase={'etsyhero-' + themeKey} registerRef={registerRef}>
-            <EtsyHeroCover theme={view} t={t} hero={imgs.hero} heroPBN={imgs.heroPBN} pages={imgs.pages} /></Board>}
-          {t.shopBundle && <Board key={'bundlegrid-' + themeKey} w={1080} h={1080} scale={zoom != null ? zoom : 0.25} label="Shop · In This Bundle 1:1" fileBase={'bundlegrid-' + themeKey} registerRef={registerRef}>
-            <BundleGridCover theme={view} t={t} hero={imgs.hero} pages={imgs.pages} /></Board>}
-          {t.shopBeforeAfter && <Board key={'beforeafter-' + themeKey} w={1080} h={1080} scale={zoom != null ? zoom : 0.25} label="Shop · Linework + Colored 1:1" fileBase={'beforeafter-' + themeKey} registerRef={registerRef}>
-            <BeforeAfterCover theme={view} t={t} hero={imgs.hero} heroPBN={imgs.heroPBN} /></Board>}
-          {t.shopDifficulty && <Board key={'difficulty-' + themeKey} w={1080} h={1080} scale={zoom != null ? zoom : 0.25} label="Shop · Difficulty 1:1" fileBase={'difficulty-' + themeKey} registerRef={registerRef}>
-            <DifficultyCover theme={view} t={t} /></Board>}
-          {t.shopFormats && <Board key={'printdigital-' + themeKey} w={1080} h={1080} scale={zoom != null ? zoom : 0.25} label="Shop · Print or Digital 1:1" fileBase={'printdigital-' + themeKey} registerRef={registerRef}>
+        <div className="base-previews">
+          {t.shopFormats && <Board key={'printdigital-' + themeKey} w={1080} h={1080} scale={0.3} label="Shop · Print or Digital 1:1" fileBase={'printdigital-' + themeKey} registerRef={registerRef}>
             <PrintDigitalCover theme={view} t={t} /></Board>}
-          {t.shopHuman && <Board key={'humanloop-' + themeKey} w={1080} h={1080} scale={zoom != null ? zoom : 0.25} label="Shop · Human in the Loop 1:1" fileBase={'humanloop-' + themeKey} registerRef={registerRef}>
+          {t.shopHuman && <Board key={'humanloop-' + themeKey} w={1080} h={1080} scale={0.3} label="Shop · Human in the Loop 1:1" fileBase={'humanloop-' + themeKey} registerRef={registerRef}>
             <HumanLoopCover theme={view} t={t} /></Board>}
-          {t.shopAbout && <Board key={'about-' + themeKey} w={1080} h={1080} scale={zoom != null ? zoom : 0.25} label="Shop · About 1:1" fileBase={'about-' + themeKey} registerRef={registerRef}>
+          {t.shopAbout && <Board key={'about-' + themeKey} w={1080} h={1080} scale={0.3} label="Shop · About 1:1" fileBase={'about-' + themeKey} registerRef={registerRef}>
             <AboutCover theme={view} t={t} /></Board>}
+          {t.shopComparison && <Board key={'comparison-' + themeKey} w={1080} h={1080} scale={0.3} label="Shop · Comparison 1:1" fileBase={'comparison-' + themeKey} registerRef={registerRef}>
+            <ComparisonCover theme={view} t={t} /></Board>}
         </div>
-      </main>
+      </div>
     </div>
   </div>);
 }

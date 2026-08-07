@@ -15,16 +15,25 @@ Oder lokal: dieses Repo herunterladen und die `index.html` doppelklicken.
 ## Was es kann
 
 - **Themes** als Startpunkt — fertige Cover-Looks, frei anpassbar.
+- **Aufgeräumte Oberfläche:** links der **Inhalt** dieses Covers (Texte, Badges, Assets),
+  rechts die **Template-Einstellungen** (Theme, Farben, Schrift, Layout & Muster), dazwischen
+  die Vorschau mit allen Bild-Slots direkt darüber.
+- **Basis-/Voll-Modus:** Umschalter, der die Panels schlank hält — *Basis* zeigt nur die
+  täglich genutzten Felder, *Voll* alle „einmal festlegen"-Einstellungen. Der Modus wird
+  gemerkt.
 - **Texte, Farben & Schriften** vollständig editierbar (pro Theme), jederzeit zurücksetzbar.
 - **Eigene Bilder** hochladen und einsetzen.
-- **Cover-Layout & Muster**, Band-/Volume-Nummer, Variant-Badge, Promo-Stempel.
+- **Cover-Layout & Muster**, Band-/Volume-Nummer, Variant-Badge, Promo-Stempel und ein
+  **Schwierigkeits-Badge** (Easy / Medium / Expert) als Ampel auf dem Cover.
 - **Feature-Pills & USPs** für Vorder- und Rückseite.
-- **Export**:
-  - **PNG** (einzeln je Element)
-  - **A4-PDF** (druckfertig)
-  - **ZIP** mit allen Assets auf einmal
-  - **Shop-Assets** im 1:1-Format (z. B. für Etsy)
-  - **Web-Clean-Export** (~1200 px WebP)
+- **Base Infos** als eigener Tab: einmal gepflegte Angaben (Autor, Webseite, Shop-Texte),
+  die für alle Cover gelten.
+- **Export** — komplett in der Kopfleiste:
+  - **ZIP komplett** — alle Assets in einer Datei: druckfertige PNGs *und* cleane
+    Web-Bilder (~1200 px WebP, ohne Badges)
+  - **PDF** druckfertig: **A4**, **US-Letter** und **KDP-Einzelseiten**
+  - **PNG** einzeln je Element
+  - **Shop-Assets** im 1:1-Format (z. B. für Etsy) sind überall mit dabei
 - **Projekt speichern/laden** als JSON — dein Cover lässt sich wiederherstellen.
 
 ## Datenschutz
