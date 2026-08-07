@@ -2,6 +2,19 @@
 
 Nennenswerte Änderungen am Cover Designer. Neueste zuerst.
 
+## 2026-08-07 — „Human in the Loop" als Prozess-Slide
+
+- Aus dem 10-Schritte-Prozess-Poster (`reference/human-in-the-loop.png`) wird eine
+  **verdichtete 3–5-Schritt-Fassung**, die auf 1080×1080 lesbar bleibt: nummerierte
+  Karten auf einer Schiene, je Karte „was passiert" + ein **„My call"**-Kasten mit der
+  Entscheidung. Darunter ein dunkles Fußband mit Claim und Werte-Chips.
+- Neue Felder in den Base Infos: `hilTagline`, `hilSteps` (je Zeile
+  `Titel :: was passiert :: meine Entscheidung`), `hilClaim`, `hilValues`.
+  `hilText`/`hilBullets` entfallen — alte Projekte laden weiter, die Felder werden
+  nur nicht mehr gerendert.
+- Default-Schritte (Englisch): Idea & market check · Generate & curate · Hand finish ·
+  Ship with care.
+
 ## 2026-08-07 — UI-Umbau: zwei Sidebars, Bild-Leiste, Header-Exporte
 
 - **Zwei Sidebars.** Links **Inhalt** (Texte, Badges & Stempel, Shop-Assets, Feature-Pills,

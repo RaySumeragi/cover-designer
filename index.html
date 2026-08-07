@@ -1865,28 +1865,74 @@ function PrintDigitalCover({ theme, t }) {
 }
 
 // 6) Human in the Loop / Quality-USP — Markenversprechen mit Bullet-Checks.
+// Prozess-Slide: nummerierte Schritte auf einer Schiene, je Schritt „was passiert" +
+// „meine Entscheidung". Bewusst auf 3–5 Schritte begrenzt — mehr wird auf 1080² unlesbar.
 function HumanLoopCover({ theme, t }) {
   const head = (t.hilHeadline || '').split('\n').map(s => s.trim()).filter(Boolean);
-  const bullets = (t.hilBullets || '').split('\n').map(s => s.trim()).filter(Boolean);
+  const values = (t.hilValues || '').split('\n').map(s => s.trim()).filter(Boolean).slice(0, 6);
+  const steps = (t.hilSteps || '').split('\n').map(l => l.trim()).filter(Boolean).slice(0, 5)
+    .map(l => { const [title, what, call] = l.split('::').map(s => (s || '').trim()); return { title, what, call }; });
+  const n = Math.max(steps.length, 1);
+  const AREA_TOP = 356, AREA_BOT = 892;           // Platz zwischen Tagline und Fußband
+  const gap = n >= 5 ? 14 : 20;
+  const h = (AREA_BOT - AREA_TOP - (n - 1) * gap) / n;
+  const s = n >= 5 ? 0.86 : 1;                     // fünf Schritte → alles etwas kleiner
+  const dot = Math.round(58 * s);
+  const rad = theme.frame === 'round' ? 18 : 10;
   return (<div style={{ width:1080, height:1080, background:theme.ground, position:'relative', overflow:'hidden', fontFamily:themeBody(theme) }}>
     <BgPattern t={t} ground={theme.ground} />
     {theme.motif === 'halftone' && <Halftone color={withAlpha(BRAND.white,0.06)} size={14} />}
-    <Eyebrow text="Our quality promise" color={theme.eyebrowColor} rule={theme.eyebrowColor} style={{ position:'absolute', top:90, left:0, right:0 }} />
-    {/* Flow-Container: Headline + Text + Bullets stapeln sich mit Abstand und werden vertikal
-        zentriert — so überschreibt langer Text die Stichpunkte nicht mehr. */}
-    <div style={{ position:'absolute', top:170, bottom:110, left:70, right:70, display:'flex', flexDirection:'column',
-      alignItems:'center', justifyContent:'center', gap:44, textAlign:'center' }}>
-      <div style={{ fontFamily:themeFont(theme), lineHeight:0.92, textTransform:'uppercase' }}>
-        {head.map((l, i) => (<div key={i} style={{ fontSize:96, color:i === head.length - 1 ? theme.accentColor : theme.titleColor }}>{l}</div>))}
-      </div>
-      <div style={{ maxWidth:840, fontFamily:themeBody(theme), fontSize:27, lineHeight:1.55, color:theme.ink }}>{t.hilText}</div>
-      <div style={{ display:'flex', flexDirection:'column', gap:20, alignItems:'flex-start', textAlign:'left' }}>
-        {bullets.map((b, i) => (
-          <div key={i} style={{ display:'flex', alignItems:'center', gap:18 }}>
-            <div style={{ flex:'0 0 auto', width:42, height:42, borderRadius:'50%', background:theme.badgeBg, color:theme.badgeColor,
-              display:'flex', alignItems:'center', justifyContent:'center', fontSize:24, fontWeight:700 }}>✓</div>
-            <div style={{ fontFamily:themeBody(theme), fontSize:26, color:theme.ink }}>{b}</div>
+    <Eyebrow text="My creative & production process" color={theme.eyebrowColor} rule={theme.eyebrowColor} style={{ position:'absolute', top:74, left:0, right:0 }} />
+    <div style={{ position:'absolute', top:146, left:70, right:70, textAlign:'center',
+      fontFamily:themeFont(theme), lineHeight:0.92, textTransform:'uppercase' }}>
+      {head.map((l, i) => (<div key={i} style={{ fontSize:78, color:i === head.length - 1 ? theme.accentColor : theme.titleColor }}>{l}</div>))}
+    </div>
+    <div style={{ position:'absolute', top:head.length > 1 ? 300 : 232, left:110, right:110, textAlign:'center',
+      fontFamily:themeBody(theme), fontSize:26, lineHeight:1.4, color:theme.ink }}>{t.hilTagline}</div>
+
+    <div style={{ position:'absolute', top:AREA_TOP, bottom:1080 - AREA_BOT, left:70, right:70 }}>
+      {/* Schiene hinter den Nummern — macht die Reihenfolge sichtbar, ohne Pfeil-Geklingel */}
+      {n > 1 && <div style={{ position:'absolute', left:dot / 2 - 1, top:h / 2, bottom:h / 2, width:2,
+        background:withAlpha(theme.accentColor, 0.35) }} />}
+      <div style={{ position:'relative', display:'flex', flexDirection:'column', gap, height:'100%' }}>
+        {steps.map((st, i) => (
+          <div key={i} style={{ height:h, display:'flex', alignItems:'center', gap:22 * s }}>
+            <div style={{ flex:'0 0 auto', width:dot, height:dot, borderRadius:'50%', background:theme.badgeBg, color:theme.badgeColor,
+              border:`3px solid ${theme.ground}`, display:'flex', alignItems:'center', justifyContent:'center',
+              fontFamily:ANTON, fontSize:Math.round(28 * s), lineHeight:1,
+              boxShadow:'0 3px 10px rgba(11,9,10,0.18)' }}>{i + 1}</div>
+            <div style={{ flex:'1 1 auto', minWidth:0, height:'100%', display:'flex', alignItems:'center', gap:20 * s,
+              background:theme.frameBg, border:`${theme.frameBorderW}px solid ${theme.frameBorder}`, borderRadius:rad,
+              padding:`${16 * s}px ${22 * s}px`, boxShadow:'0 6px 16px rgba(11,9,10,0.10)' }}>
+              <div style={{ flex:'1 1 auto', minWidth:0 }}>
+                <div style={{ fontFamily:themeFont(theme), fontSize:Math.round(30 * s), lineHeight:1.05,
+                  textTransform:'uppercase', color:theme.titleColor }}>{st.title}</div>
+                {st.what && <div style={{ marginTop:6 * s, fontFamily:themeBody(theme), fontSize:Math.round(20 * s),
+                  lineHeight:1.35, color:theme.ink }}>{st.what}</div>}
+              </div>
+              {st.call && <div style={{ flex:'0 0 auto', width:Math.round(268 * s), alignSelf:'stretch',
+                display:'flex', flexDirection:'column', justifyContent:'center', gap:4,
+                background:withAlpha(theme.accentColor, 0.12), borderLeft:`3px solid ${theme.accentColor}`,
+                borderRadius:6, padding:`${10 * s}px ${14 * s}px` }}>
+                <div style={{ fontFamily:SANS, fontWeight:700, fontSize:Math.round(12 * s), letterSpacing:'0.14em',
+                  textTransform:'uppercase', color:theme.accentColor }}>My call</div>
+                <div style={{ fontFamily:themeBody(theme), fontSize:Math.round(18 * s), lineHeight:1.3, color:theme.ink }}>{st.call}</div>
+              </div>}
+            </div>
           </div>))}
+      </div>
+    </div>
+
+    {/* Fußband: Claim + Werte-Chips */}
+    <div style={{ position:'absolute', left:70, right:70, top:AREA_BOT + 20, background:BRAND.dark, borderRadius:14,
+      padding:'20px 26px', display:'flex', alignItems:'center', gap:22, boxShadow:'0 8px 20px rgba(11,9,10,0.22)' }}>
+      <div style={{ flex:'0 0 auto', maxWidth:340, fontFamily:themeFont(theme), fontSize:26, lineHeight:1.15,
+        textTransform:'uppercase', color:theme.accentColor, whiteSpace:'pre-line' }}>{t.hilClaim}</div>
+      <div style={{ flex:'1 1 auto', display:'flex', flexWrap:'wrap', gap:8, justifyContent:'flex-end' }}>
+        {values.map((v, i) => (
+          <span key={i} style={{ background:withAlpha(BRAND.light, 0.10), border:`1px solid ${withAlpha(BRAND.light, 0.22)}`,
+            color:BRAND.light, borderRadius:999, padding:'6px 12px', fontFamily:SANS, fontWeight:700,
+            fontSize:values.length > 4 ? 13.5 : 15, letterSpacing:'0.04em', textTransform:'uppercase', whiteSpace:'nowrap' }}>{v}</span>))}
       </div>
     </div>
     <Watermark color={theme.watermark} text={t.website} show={t.showWebsite} />
@@ -2071,8 +2117,14 @@ const DEFAULTS = { title:'Cute Animals', subtitle:'30 hand-drawn anime motifs to
   printText:'Print at home or at a copy shop — high-resolution PDF, A4 & US Letter, single-sided.',
   digitalText:'Color on your tablet — works in Procreate, GoodNotes and any layer app. PNG + PDF included.',
   hilHeadline:'Human in\nthe loop',
-  hilText:'Every motif is drawn, reviewed and hand-finished by us — never auto-generated slop. We use AI as a brush, not as the artist.',
-  hilBullets:'Hand-reviewed line art\nConsistent, on-model characters\nMade by humans who actually color',
+  hilTagline:'AI assists. I decide. Quality happens.',
+  // Ein Schritt pro Zeile: Titel :: was passiert :: meine Entscheidung. Max. 5 (sonst unlesbar).
+  hilSteps:'Idea & market check :: AI surfaces themes, styles and market signals — I weigh potential, audience and fit. :: I decide what is worth making.\n'
+    + 'Generate & curate :: Motifs are generated, sorted and reworked for detail, light and clean lines. :: Only the best pages move on.\n'
+    + 'Hand finish :: Line art optimised, colours matched, selected motifs reworked by hand. :: I do the final pass myself.\n'
+    + 'Ship with care :: Difficulty levels, colour matching and honest descriptions before release. :: You know exactly what you get.',
+  hilClaim:'Human at the center.\nAI as an amplifier.',
+  hilValues:'Creativity\nDecision\nQuality\nResponsibility\nPassion',
   aboutIntro:'Ria and Ray believe creativity does not start with perfection — it starts with curiosity, courage, and the simple joy of trying.',
   aboutRia:'Ria brings playful energy, colorful ideas, and the courage to explore.',
   aboutRay:'Ray brings reflection, imagination, and the belief that every small step can grow into something meaningful.',
@@ -2083,7 +2135,7 @@ const DEFAULTS = { title:'Cute Animals', subtitle:'30 hand-drawn anime motifs to
 // Fest gepflegte „Base Infos" (im „Edit Base Infos"-Overlay) — Reihenfolge = Reihenfolge im Snippet.
 const BASE_INFO_KEYS = ['author','website',
   'shopFormats','formatMode','printText','digitalText',
-  'shopHuman','hilHeadline','hilText','hilBullets',
+  'shopHuman','hilHeadline','hilTagline','hilSteps','hilClaim','hilValues',
   'shopAbout','aboutIntro','aboutRia','aboutRay','aboutOutro','aboutRiaImg','aboutRayImg',
   'socialBrand','socialInsta','socialYoutube','socialEmail',
   'shopComparison','cmpEyebrow','cmpTitle','cmpSub','cmpUsName','cmpThemName','cmpRows','cmpRevivalTitle','cmpRevivalText','cmpBadge'];
@@ -2798,11 +2850,15 @@ function App() {
               {t.formatMode !== 'digital' && <div className="row"><label>Print-Text</label><textarea rows={3} value={t.printText} onChange={e => set('printText', e.target.value)} /></div>}
               {t.formatMode !== 'print' && <div className="row"><label>Digital-Text</label><textarea rows={3} value={t.digitalText} onChange={e => set('digitalText', e.target.value)} /></div>}
             </Sec>
-            <Sec tier="basis" title="Human in the Loop">
+            <Sec tier="basis" title="Human in the Loop (Prozess)">
               <label className="check"><input type="checkbox" checked={t.shopHuman === true} onChange={e => set('shopHuman', e.target.checked)} /> Asset in Export einschließen</label>
               <div className="row"><label>Überschrift (eine Zeile = eine Headline-Zeile)</label><textarea rows={2} value={t.hilHeadline} onChange={e => set('hilHeadline', e.target.value)} /></div>
-              <div className="row"><label>Text</label><textarea rows={4} value={t.hilText} onChange={e => set('hilText', e.target.value)} /></div>
-              <div className="row"><label>Punkte (eine Zeile = ein Häkchen)</label><textarea rows={3} value={t.hilBullets} onChange={e => set('hilBullets', e.target.value)} /></div>
+              <div className="row"><label>Tagline</label><input type="text" value={t.hilTagline} onChange={e => set('hilTagline', e.target.value)} /></div>
+              <div className="row"><label>Schritte (je Zeile: Titel :: was passiert :: meine Entscheidung)</label>
+                <textarea style={{ minHeight:150 }} value={t.hilSteps} onChange={e => set('hilSteps', e.target.value)} /></div>
+              <div className="hint">Max. <b>5 Schritte</b> — darüber wird auf 1080×1080 nichts mehr lesbar (überzählige Zeilen werden ignoriert). Der dritte Teil (<code>::</code>) landet im „My call"-Kasten rechts; er ist optional.</div>
+              <div className="row"><label>Claim (Fußband, eine Zeile = eine Zeile)</label><textarea rows={2} value={t.hilClaim} onChange={e => set('hilClaim', e.target.value)} /></div>
+              <div className="row"><label>Werte-Chips (eine Zeile = ein Chip, max. 6)</label><textarea rows={3} value={t.hilValues} onChange={e => set('hilValues', e.target.value)} /></div>
               <div className="hint">Letzte Überschrift-Zeile erscheint in der Akzentfarbe.</div>
             </Sec>
             <Sec tier="basis" title="About Ria & Ray">
