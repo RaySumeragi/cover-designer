@@ -2,6 +2,22 @@
 
 Nennenswerte Änderungen am Cover Designer. Neueste zuerst.
 
+## 2026-08-09 — PNG-Export auf den Rahmen des PDF-Tools
+
+- Neuer Header-Select **„PNG-Ziel"**: `aus (nativ)` · `Freebie · LETTER` (2432×3182) ·
+  `KDP · LETTER` (2267×3088). Mit aktivem Ziel rastert `captureForTarget()` jedes Board
+  **direkt in Rahmen-Pixeln @300 DPI** statt mit den festen Scales 4.85/2 — das
+  nachgelagerte PDF-Tool (Export-Cap 3508 px Langkante) muss danach nicht mehr
+  herunterrechnen, also kein zweites Resampling und keine weichen Kanten.
+- **Print-Seiten** (Front/Back/What's Inside) werden proportional eingepasst und das Canvas
+  exakt aufs Rahmenmaß gepolstert (Ground-Farbe des Themes) — das Board-Ratio 0.773 trifft
+  die Rahmen 0.764/0.734 nicht. Alle übrigen Boards (1:1-Shop-Assets, 16:9, Thumb) bekommen
+  nur die Zielauflösung, **kein** Padding.
+- Bei aktivem Ziel tragen die Dateien ein Suffix (`… Cover [kdp].png`, `… Assets [kdp].zip`),
+  damit Freebie- und KDP-Läufe sich nicht überschreiben. Gilt für ZIP komplett (Ordner
+  `PNG/`), PNG einzeln und den PNG-Knopf am einzelnen Board; `WEB/` und die PDF-Exporte
+  bleiben unverändert. Die Auswahl wird in `localStorage` mitgesichert.
+
 ## 2026-08-07 — „Human in the Loop" als Prozess-Slide
 
 - Aus dem 10-Schritte-Prozess-Poster (`reference/human-in-the-loop.png`) wird eine

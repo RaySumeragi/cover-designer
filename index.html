@@ -723,6 +723,10 @@
     .hbtn.primary { background:linear-gradient(135deg,var(--crimson),var(--gold)); border-color:transparent; color:#fff; }
     .hbtn.primary:hover:not(:disabled) { filter:brightness(1.07); color:#fff; }
     .hbtn:disabled { opacity:.45; cursor:default; }
+    .hsel { padding:6px 8px; border:1px solid var(--line); border-radius:5px; background:#23292e; color:var(--light);
+            font-weight:700; font-size:.72rem; cursor:pointer; font-family:inherit; }
+    .hsel:disabled { opacity:.45; cursor:default; }
+    .hnote { font-size:.62rem; color:var(--muted); white-space:nowrap; }
     .header-tools { margin-left:auto; display:flex; align-items:center; gap:12px; }
     .busy { font-size:.72rem; color:var(--gold); white-space:nowrap; }
     .header-mode { display:flex; gap:4px; }
@@ -1558,6 +1562,48 @@ function scaleCanvasToMax(src, maxEdge) {
   ctx.drawImage(src, 0, 0, out.width, out.height);
   return out;
 }
+/* ── PNG-Ziele für das nachgelagerte PDF-Tool ──────────────────────────────────
+   Das Folge-Tool setzt jedes Motiv in einen festen Rahmen (Maße @300 DPI) und
+   begrenzt Importe auf 3508 px Langkante. Rendern wir nativ (630×815 @4.85 →
+   3055×3953), rechnet es jedes PNG ein zweites Mal herunter → weiche Kanten.
+   Mit aktivem Ziel rastert der Export deshalb direkt in Rahmen-Pixeln: ein
+   einziger Rasterisier-Schritt, danach im Tool kein Resampling mehr. */
+const PDF_TARGET_CAP = 3508; // Import-Limit des Folge-Tools (Langkante)
+const PDF_TARGETS = {
+  off:     { label: 'aus (nativ)' },
+  freebie: { label: 'Freebie · LETTER', w: 2432, h: 3182 }, // Motiv-Rahmen 205.9 × 269.4 mm
+  kdp:     { label: 'KDP · LETTER',     w: 2267, h: 3088 }, // Motiv-Rahmen 191.9 × 261.4 mm (6 mm Bundsteg)
+};
+// Boards, die als Buchseite ins PDF-Tool wandern → Canvas exakt auf Rahmenmaß.
+// Alle übrigen (1:1-Shop-Assets, 16:9-Teaser) werden nur eingepasst, nie gepolstert:
+// ein quadratisches Etsy-Bild in einem Hochkant-Rahmen wäre kaputt.
+const PDF_PAD_FMTS = ['front', 'back', 'whatsinside'];
+// Von App bei jedem Render gesetzt, damit der PNG-Knopf an jedem Board dasselbe
+// Ziel benutzt wie die Sammel-Exporte — ohne das Ziel durch 14 Board-Aufrufe zu fädeln.
+const EXPORT_TARGET = { key:'off', target:null, bg:null };
+
+// Ein Board für das PDF-Tool rastern. `pad` = Canvas exakt auf Rahmenmaß bringen,
+// Rest mit der Ground-Farbe des Themes gefüllt (das Board-Seitenverhältnis 0.773
+// trifft den Rahmen nicht exakt). Ohne Ziel: unverändertes Verhalten.
+async function captureForTarget(node, fallbackScale, target, pad, bg) {
+  if (!target || !target.w) return captureNode(node, fallbackScale);
+  const bw = node.offsetWidth, bh = node.offsetHeight;
+  if (!bw || !bh) return captureNode(node, fallbackScale);
+  const W = Math.min(target.w, PDF_TARGET_CAP), H = Math.min(target.h, PDF_TARGET_CAP);
+  const fit = Math.min(W / bw, H / bh);          // seitenverhältnis-erhaltend in den Rahmen
+  const src = await captureNode(node, fit);
+  const dw = Math.min(W, Math.round(bw * fit)), dh = Math.min(H, Math.round(bh * fit));
+  // html2canvas rundet selbst auf ganze Pixel — passt es, ohne Padding direkt durchreichen.
+  if (!pad && src.width === dw && src.height === dh) return src;
+  const out = document.createElement('canvas');
+  out.width = pad ? W : dw; out.height = pad ? H : dh;
+  const ctx = out.getContext('2d');
+  if (bg) { ctx.fillStyle = bg; ctx.fillRect(0, 0, out.width, out.height); }
+  ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(src, Math.round((out.width - dw) / 2), Math.round((out.height - dh) / 2), dw, dh);
+  return out;
+}
+
 // WebP kodieren, mit PNG-Fallback falls der Browser kein WebP-Encoding kann (toBlob → null).
 function canvasToWebpBlob(canvas, quality = 0.82) {
   return new Promise(res => {
@@ -1575,7 +1621,9 @@ function Board({ w, h, scale, label, fileBase, registerRef, pngScale = 2, childr
   return (<div className="board">
     <div className="board-head">
       <span className="nm">{label}</span>
-      <button onClick={async () => downloadCanvas(await captureNode(ref.current, pngScale), fileBase + '.png')}>PNG</button>
+      <button onClick={async () => downloadCanvas(await captureForTarget(ref.current, pngScale,
+        EXPORT_TARGET.target, PDF_PAD_FMTS.some(f => fileBase.startsWith(f + '-')), EXPORT_TARGET.bg),
+        fileBase + (EXPORT_TARGET.target ? ` [${EXPORT_TARGET.key}]` : '') + '.png')}>PNG</button>
     </div>
     <div className="board-stage" style={{ width:w*scale, height:h*scale }}>
       <div className="artboard" ref={ref} style={{ width:w, height:h, transform:`scale(${scale})` }}>{children}</div>
@@ -2166,6 +2214,8 @@ function App() {
   const [baseCopied, setBaseCopied] = useState(false); // Feedback für „Als Code kopieren"
   const [imgBarOpen, setImgBarOpen] = useState(true); // Bild-Leiste über der Vorschau auf/zu
   const [busy, setBusy] = useState(''); // laufender Export (Label) → Kopfleisten-Buttons sperren
+  // Ziel-Pixelmaß für den PNG-Export (Rahmen des nachgelagerten PDF-Tools); 'off' = nativ rendern.
+  const [pdfTarget, setPdfTarget] = useState(PDF_TARGETS[saved.pdfTarget] ? saved.pdfTarget : 'off');
   const [zoom, setZoom] = useState(null); // null = Fit (per-board default scale)
   const [imagesByTheme, setImagesByTheme] = useState({}); // Bilder sind ObjectURLs → nicht persistierbar
   const [colorsByTheme, setColorsByTheme] = useState(saved.colorsByTheme || {}); // per-theme palette overrides
@@ -2180,8 +2230,8 @@ function App() {
   const [fontByTheme, setFontByTheme] = useState(saved.fontByTheme || {}); // Schrift-Overrides pro Theme: { title, body }
   // Auto-Save: Texte, Theme-Auswahl, Farb-, Back-Text-, Überschrift- und Schrift-Overrides bei jeder Änderung in localStorage spiegeln
   useEffect(() => {
-    try { localStorage.setItem(LS_KEY, JSON.stringify({ themeKey, t, colorsByTheme, blurbByTheme, hookByTheme, fontByTheme, uiMode })); } catch (e) {}
-  }, [themeKey, t, colorsByTheme, blurbByTheme, hookByTheme, fontByTheme, uiMode]);
+    try { localStorage.setItem(LS_KEY, JSON.stringify({ themeKey, t, colorsByTheme, blurbByTheme, hookByTheme, fontByTheme, uiMode, pdfTarget })); } catch (e) {}
+  }, [themeKey, t, colorsByTheme, blurbByTheme, hookByTheme, fontByTheme, uiMode, pdfTarget]);
   function resetSettings() {
     if (!window.confirm('Alle gespeicherten Einstellungen zurücksetzen?')) return;
     try { localStorage.removeItem(LS_KEY); } catch (e) {}
@@ -2296,6 +2346,13 @@ function App() {
     ['about', 2, 'About', 'shopAbout'], ['comparison', 2, 'Comparison', 'shopComparison'],
   ];
   const allJobs = [...EXPORT_JOBS, ...SHOP_JOBS.filter(j => t[j[3]])];
+  // Aktives PNG-Ziel; 'off' → target null → captureForTarget fällt auf die Job-Scale zurück.
+  const pngTarget = pdfTarget !== 'off' ? PDF_TARGETS[pdfTarget] : null;
+  const targetTag = pngTarget ? ` [${pdfTarget}]` : ''; // Dateiname-Suffix, damit sich Freebie/KDP nicht überschreiben
+  EXPORT_TARGET.key = pdfTarget; EXPORT_TARGET.target = pngTarget; EXPORT_TARGET.bg = view.ground;
+  // Ein Job → fertiges Canvas in Zielauflösung (Print-Seiten aufs Rahmenmaß gepolstert).
+  const captureJob = (node, fmt, sc) =>
+    captureForTarget(node, sc, pngTarget, PDF_PAD_FMTS.includes(fmt), view.ground);
   function exportBase() {
     const series  = (t.title || 'Series').replace(/[<>:"/\\|?*]/g, '').trim();
     const vol     = (t.volumeText || '').trim();
@@ -2346,7 +2403,7 @@ function App() {
     const base = exportBase();
     for (const [fmt, sc, lbl] of allJobs) {
       const node = refs.current[fmt + '-' + themeKey]?.current; if (!node) continue;
-      downloadCanvas(await captureNode(node, sc), `${base} ${lbl}.png`);
+      downloadCanvas(await captureJob(node, fmt, sc), `${base} ${lbl}${targetTag}.png`);
       await new Promise(r => setTimeout(r, 350));
     }
   }
@@ -2357,9 +2414,9 @@ function App() {
     const zip = new JSZip();
     for (const [fmt, sc, lbl] of allJobs) {
       const node = refs.current[fmt + '-' + themeKey]?.current; if (!node) continue;
-      const canvas = await captureNode(node, sc);
+      const canvas = await captureJob(node, fmt, sc);
       const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
-      zip.file(`PNG/${base} ${lbl}.png`, blob);
+      zip.file(`PNG/${base} ${lbl}${targetTag}.png`, blob);
     }
     const prev = { showBadges: t.showBadges, promoBadge: t.promoBadge };
     ReactDOM.flushSync(() => setT(s => ({ ...s, showBadges:false, promoBadge:false })));
@@ -2375,7 +2432,7 @@ function App() {
     }
     const zipBlob = await zip.generateAsync({ type:'blob' });
     const a = document.createElement('a');
-    a.href = URL.createObjectURL(zipBlob); a.download = `${base} Assets.zip`;
+    a.href = URL.createObjectURL(zipBlob); a.download = `${base} Assets${targetTag}.zip`;
     a.click(); URL.revokeObjectURL(a.href);
   }
   // Export mit Status-Label in der Kopfleiste; sperrt solange die übrigen Export-Buttons.
@@ -2451,6 +2508,14 @@ function App() {
       </nav>
       <div className="hgrp">
         <span className="hgrp-l">Export</span>
+        {/* PNG-Ziel: rastert die Exporte direkt in den Motiv-Rahmen des PDF-Tools (@300 DPI),
+            statt dort ein zweites Mal heruntergerechnet zu werden. */}
+        <select className="hsel" value={pdfTarget} disabled={!!busy} title="Ziel-Pixelmaß der PNG-Exporte"
+          onChange={e => setPdfTarget(e.target.value)}>
+          {Object.entries(PDF_TARGETS).map(([k, v]) =>
+            <option key={k} value={k}>{'PNG-Ziel: ' + v.label}</option>)}
+        </select>
+        {pngTarget && <span className="hnote">{pngTarget.w} × {pngTarget.h} px</span>}
         <button className="hbtn primary" disabled={!!busy} onClick={() => run('ZIP komplett', exportZipAll)}>
           ZIP komplett ({allJobs.length} PNG + WebP)</button>
         <button className="hbtn" disabled={!!busy} onClick={() => run('A4-PDF', () => exportPDF('a4'))}>A4-PDF</button>
