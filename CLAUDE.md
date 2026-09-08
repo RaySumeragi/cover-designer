@@ -53,6 +53,12 @@ ausdrückliche Ansage pushen**.
   (ein ZIP mit `PNG/` **und** badge-freien `WEB/`-WebPs). Alles im Header; `run(label, fn)`
   setzt `busy` und sperrt die Buttons. `allJobs = [...EXPORT_JOBS, ...SHOP_JOBS.filter(sichtbar)]`,
   `EXPORT_JOBS` lässt Thumb/Gallery/Teaser im Basis-Modus weg (dort nicht gerendert).
+- **Bild-Auto-Import:** `autoSlotFor` bildet Dateinamen auf Slots ab, `scanAutoDir` liest
+  `reference/auto/` (nur über http(s), unter `file://` leer), `fillAutoImages` füllt **nur
+  leere** Slots. `reference/` ist git-ignoriert.
+- **Tablet-Mockup:** `detectScreenRect` findet das transparente Displayloch (Flood-Fill vom
+  Bildrand = Hintergrund, größte übrige transparente Region = Display); `MockupCover` legt
+  das Cover hinter das PNG. `t.mockupManual` + `mockupScr*` sind der Hand-Override.
 - **Base Infos:** Felder aus `BASE_INFO_KEYS` (Autor/Webseite + fest gepflegte Etsy-Assets),
   „⧉ Als Code kopieren" erzeugt daraus ein `DEFAULTS`-Snippet.
 
@@ -60,8 +66,10 @@ ausdrückliche Ansage pushen**.
 
 - Kein Build/Lint/Test → **manuell im Browser verifizieren** (`index.html` öffnen, betroffene
   Boxen in Basis **und** Voll prüfen, Export testen, Konsole auf Fehler checken).
-- `file://`-Navigation in Chrome-Automation ist blockiert → bei Bedarf
-  `python -m http.server` im Repo starten und `http://localhost:<port>/index.html` öffnen.
+- `file://`-Navigation in Chrome-Automation ist blockiert → im Repo
+  `python -m http.server 8777 --bind 127.0.0.1` starten und
+  `http://127.0.0.1:8777/index.html` öffnen (steht so auch in der README).
+  Achtung: `img.decode()` hängt im Automations-Kontext — im Tool-Code `onload` benutzen.
 - Alte JSON-Projekte ohne neue Felder müssen ohne Crash laden (`{ ...DEFAULTS, ...data.t }`).
 
 Siehe [ROADMAP.md](ROADMAP.md) für offene Punkte und [CHANGELOG.md](CHANGELOG.md) für die Historie.

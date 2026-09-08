@@ -12,6 +12,20 @@ Anmeldung, keine Cloud: alles läuft lokal im Browser.
 
 Oder lokal: dieses Repo herunterladen und die `index.html` doppelklicken.
 
+### Lokal über einen Server starten (empfohlen)
+
+Doppelklick funktioniert, aber unter `file://` behandelt Chrome jede Datei als eigenen
+Origin und räumt den `localStorage` gern mal weg — gespeicherte Einstellungen sind dann
+weg. Über `localhost` bleiben sie erhalten, und der **Bild-Auto-Import** (siehe unten)
+funktioniert nur dort. Im Repo-Ordner:
+
+```bash
+python -m http.server 8777 --bind 127.0.0.1
+```
+
+Dann im Browser [http://127.0.0.1:8777/index.html](http://127.0.0.1:8777/index.html)
+öffnen. Beenden mit `Strg+C`.
+
 ## Was es kann
 
 - **Themes** als Startpunkt — fertige Cover-Looks, frei anpassbar.
@@ -22,7 +36,11 @@ Oder lokal: dieses Repo herunterladen und die `index.html` doppelklicken.
   täglich genutzten Felder, *Voll* alle „einmal festlegen"-Einstellungen. Der Modus wird
   gemerkt.
 - **Texte, Farben & Schriften** vollständig editierbar (pro Theme), jederzeit zurücksetzbar.
-- **Eigene Bilder** hochladen und einsetzen.
+- **Eigene Bilder** hochladen und einsetzen — per Drag & Drop, aus einem Ordner
+  (Knopf „📁 Ordner laden") oder auf `localhost` automatisch beim Start aus
+  `reference/auto/`. Von Hand abgelegte Bilder werden dabei nie überschrieben.
+- **Tablet-Mockup:** ein PNG mit ausgestanztem (transparentem) Display ablegen — das
+  Cover wird automatisch dahinter gesetzt, der Displaybereich per Alpha-Analyse gefunden.
 - **Cover-Layout & Muster**, Band-/Volume-Nummer, Variant-Badge, Promo-Stempel und ein
   **Schwierigkeits-Badge** (Easy / Medium / Expert) als Ampel auf dem Cover.
 - **Feature-Pills & USPs** für Vorder- und Rückseite.
@@ -35,6 +53,28 @@ Oder lokal: dieses Repo herunterladen und die `index.html` doppelklicken.
   - **PNG** einzeln je Element
   - **Shop-Assets** im 1:1-Format (z. B. für Etsy) sind überall mit dabei
 - **Projekt speichern/laden** als JSON — dein Cover lässt sich wiederherstellen.
+
+## Bilder automatisch laden
+
+Ein Browser darf keinen Ordner von sich aus lesen. Deshalb gibt es zwei Wege:
+
+- **Knopf „📁 Ordner laden"** in der Bild-Leiste — funktioniert immer, auch beim
+  Doppelklick auf `index.html`.
+- **Automatisch beim Start** — nur wenn das Tool über einen lokalen Server läuft
+  (siehe oben). Dann wird `reference/auto/` beim Laden selbst eingelesen.
+
+Beide füllen ausschließlich **leere** Slots; was du selbst hineingezogen hast, bleibt.
+Zugeordnet wird über den Dateinamen (Groß-/Kleinschreibung egal, `_` gilt wie `-`):
+
+| Datei | Slot |
+| --- | --- |
+| `hero.png` | Hero — colored |
+| `hero-pbn.png` | Hero — PBN / lineart |
+| `mockup.png` | Tablet-Mockup |
+| `page-1.png` … `page-8.png` | Back 1–4, Gallery 1–4 |
+| `ba-1-line.png` / `ba-1-color.png` | Before & After, Paar 1 (bis Paar 4) |
+
+Dateien mit anderen Namen werden ignoriert — der Ordner darf also auch anderes enthalten.
 
 ## Datenschutz
 

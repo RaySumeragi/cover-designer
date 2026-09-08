@@ -928,6 +928,8 @@ async function serializeImages(imagesByTheme) {
       pages:   await Promise.all((v.pages || []).map(urlToDataURL)),
       baLine:  await Promise.all((v.baLine  || []).map(urlToDataURL)),
       baColor: await Promise.all((v.baColor || []).map(urlToDataURL)),
+      mockup:  await urlToDataURL(v.mockup),
+      mockupScreen: v.mockupScreen || null,
     };
   }
   return out;
@@ -1523,6 +1525,80 @@ function TeaserCover({ theme, t, hero, heroPBN, pages }) {
   </div>);
 }
 
+/* -- Mockup: Displayloch per Alpha-Analyse finden ---------------------------
+   Ein freigestelltes Mockup hat ZWEI transparente Zonen -- den Hintergrund und das
+   ausgestanzte Display. Unterschieden werden sie ueber den Bildrand: der Hintergrund
+   haengt immer daran, das Display nie. Also Flood-Fill von allen vier Kanten (= Hintergrund),
+   und von den uebrigen transparenten Regionen die groesste nehmen. `fill` meldet, wie
+   rechteckig der Fund ist -- unter ~0.9 stimmt etwas nicht und die UI warnt. */
+const SCREEN_ALPHA = 8;       // darunter gilt ein Pixel als transparent
+const SCREEN_SCAN_MAX = 1200; // Langkante fuer den Scan; groessere Bilder werden verkleinert
+function detectScreenRect(img) {
+  const nw = img.naturalWidth, nh = img.naturalHeight;
+  if (!nw || !nh) return null;
+  const k = Math.min(1, SCREEN_SCAN_MAX / Math.max(nw, nh));
+  const W = Math.max(1, Math.round(nw * k)), H = Math.max(1, Math.round(nh * k));
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const ctx = cv.getContext('2d', { willReadFrequently:true });
+  ctx.drawImage(img, 0, 0, W, H);
+  let data;
+  try { data = ctx.getImageData(0, 0, W, H).data; } catch (e) { return null; } // getaintetes Canvas
+  const N = W * H, trans = new Uint8Array(N);
+  let nTrans = 0;
+  for (let i = 0; i < N; i++) if (data[i * 4 + 3] < SCREEN_ALPHA) { trans[i] = 1; nTrans++; }
+  if (!nTrans) return null;
+  const stack = new Int32Array(N);
+  // 1) Vom Rand fluten -> alles Erreichbare ist Hintergrund, kein Display.
+  const bg = new Uint8Array(N);
+  let sp = 0;
+  const pushBg = i => { if (trans[i] && !bg[i]) { bg[i] = 1; stack[sp++] = i; } };
+  for (let x = 0; x < W; x++) { pushBg(x); pushBg((H - 1) * W + x); }
+  for (let y = 0; y < H; y++) { pushBg(y * W); pushBg(y * W + W - 1); }
+  while (sp) {
+    const i = stack[--sp], x = i % W, y = (i / W) | 0;
+    if (x > 0)     pushBg(i - 1);
+    if (x < W - 1) pushBg(i + 1);
+    if (y > 0)     pushBg(i - W);
+    if (y < H - 1) pushBg(i + W);
+  }
+  // 2) Groesste verbleibende transparente Region = Display.
+  const seen = new Uint8Array(N);
+  let best = null;
+  for (let start = 0; start < N; start++) {
+    if (!trans[start] || bg[start] || seen[start]) continue;
+    let n = 0, x0 = W, x1 = -1, y0 = H, y1 = -1;
+    sp = 0; seen[start] = 1; stack[sp++] = start;
+    const push = i => { if (trans[i] && !bg[i] && !seen[i]) { seen[i] = 1; stack[sp++] = i; } };
+    while (sp) {
+      const i = stack[--sp], x = i % W, y = (i / W) | 0;
+      n++;
+      if (x < x0) x0 = x; if (x > x1) x1 = x;
+      if (y < y0) y0 = y; if (y > y1) y1 = y;
+      if (x > 0)     push(i - 1);
+      if (x < W - 1) push(i + 1);
+      if (y > 0)     push(i - W);
+      if (y < H - 1) push(i + W);
+    }
+    if (!best || n > best.n) best = { n, x0, y0, x1, y1 };
+  }
+  if (!best) return null;
+  const w = best.x1 - best.x0 + 1, h = best.y1 - best.y0 + 1;
+  return { x:best.x0 / W, y:best.y0 / H, w:w / W, h:h / H, // Anteile am Bild -> aufloesungsunabhaengig
+           ar:nw / nh, fill:best.n / (w * h) };
+}
+
+// Bild laden und Displayloch suchen. Kein img.decode() — das haengt in manchen
+// Automations-/Headless-Kontexten; onload ist ueberall verlaesslich.
+function screenRectFromUrl(url) {
+  return new Promise(res => {
+    if (!url) return res(null);
+    const im = new Image();
+    im.onload  = () => res(detectScreenRect(im));
+    im.onerror = () => res(null);
+    im.src = url;
+  });
+}
+
 /* ── Export helpers ───────────────────────────────────────────────────────── */
 async function captureNode(node, scale) {
   await document.fonts.ready;
@@ -1887,18 +1963,78 @@ function BeforeAfterGridCover({ theme, t, lineArt, colored, hero, heroPBN }) {
   </div>);
 }
 
+/* 3b) Tablet-Mockup -- das Cover im ausgestanzten Display eines Mockup-PNGs.
+   Reihenfolge im DOM ist die halbe Miete: Displayfarbe, darauf das Cover, darueber das
+   PNG. Rahmen, Finger und Reflexe des Mockups decken damit die Coverkanten ab, statt dass
+   das Cover sichtbar aufgeklebt wirkt. Loch-Koordinaten kommen als Bildanteile aus
+   detectScreenRect (oder von Hand, wenn t.mockupManual). */
+const MOCKUP_FALLBACK = { x:0.36, y:0.445, w:0.28, h:0.444, ar:1, fill:1 };
+function MockupCover({ theme, t, mockup, screen, hero, heroPBN, pages }) {
+  const pct = (v, d) => { const n = parseFloat(v); return Number.isFinite(n) ? n : d; };
+  const scr = t.mockupManual
+    ? { x:pct(t.mockupScrX, 36) / 100, y:pct(t.mockupScrY, 44.5) / 100,
+        w:pct(t.mockupScrW, 28) / 100, h:pct(t.mockupScrH, 44.4) / 100, ar:(screen && screen.ar) || 1 }
+    : (screen || MOCKUP_FALLBACK);
+  // Mockup seitenverhaeltnis-erhaltend in ein Quadrat der Kantenlaenge `size` einpassen.
+  const size = Math.round(1080 * pct(t.mockupSize, 84) / 100);
+  const ar = scr.ar || 1;
+  let bw = size, bh = Math.round(size / ar);
+  if (bh > size) { bh = size; bw = Math.round(size * ar); }
+  const left = Math.round((1080 - bw) / 2), top = Math.round(pct(t.mockupTop, 92));
+  const sx = scr.x * bw, sy = scr.y * bh, sw = scr.w * bw, sh = scr.h * bh;
+  // Cover (630x815) ins Displayrechteck -- 'cover' fuellt randlos (schneidet an), sonst eingepasst.
+  const k = t.mockupFit === 'cover' ? Math.max(sw / PAGE_W, sh / PAGE_H) : Math.min(sw / PAGE_W, sh / PAGE_H);
+  const caption = (t.mockupCaption || '').split('\n').map(l => l.trim()).filter(Boolean);
+  return (<div style={{ width:1080, height:1080, background:theme.ground, position:'relative', overflow:'hidden', fontFamily:themeBody(theme) }}>
+    <BgPattern t={t} ground={theme.ground} />
+    {theme.motif === 'halftone' && <Halftone color={withAlpha(BRAND.white,0.06)} size={14} />}
+    {!!(t.mockupEyebrow || '').trim() &&
+      <Eyebrow text={t.mockupEyebrow} color={theme.eyebrowColor} rule={theme.eyebrowColor} style={{ position:'absolute', top:40, left:0, right:0 }} />}
+    <div style={{ position:'absolute', left, top, width:bw, height:bh }}>
+      <div style={{ position:'absolute', left:sx, top:sy, width:sw, height:sh, overflow:'hidden',
+        background:t.mockupScreenBg || '#12100f' }}>
+        <div style={{ position:'absolute', left:(sw - PAGE_W * k) / 2, top:(sh - PAGE_H * k) / 2,
+          width:PAGE_W, height:PAGE_H, transform:`scale(${k})`, transformOrigin:'top left' }}>
+          <FrontCover theme={theme} t={t} hero={hero} heroPBN={heroPBN} pages={pages} />
+        </div>
+      </div>
+      {/* Volle Breite/Hoehe statt object-fit: die Box hat bereits das Bild-Seitenverhaeltnis,
+          und html2canvas ignoriert object-fit (siehe ImgSlot). */}
+      {mockup
+        ? <img src={mockup} alt="" style={{ position:'absolute', left:0, top:0, width:'100%', height:'100%' }} />
+        : <div style={{ position:'absolute', left:0, top:0, right:0, bottom:0, borderRadius:18,
+            border:`3px dashed ${withAlpha(theme.ink, 0.3)}`, display:'flex', alignItems:'center', justifyContent:'center',
+            textAlign:'center', padding:50, fontFamily:SANS, fontSize:23, lineHeight:1.5, color:withAlpha(theme.ink, 0.5) }}>
+            Mockup-PNG in der Bild-Leiste ablegen &mdash;<br />Displaybereich muss transparent sein
+          </div>}
+    </div>
+    {!!caption.length && <div style={{ position:'absolute', left:70, right:70, bottom:52, textAlign:'center',
+      fontFamily:themeFont(theme), fontSize:38, lineHeight:1.08, textTransform:'uppercase' }}>
+      {caption.map((l, i) => (<div key={i} style={{ color:i === caption.length - 1 ? theme.accentColor : theme.titleColor }}>{l}</div>))}
+    </div>}
+    <Watermark color={theme.watermark} text={t.website} show={t.showWebsite} />
+  </div>);
+}
+
 // 4) Print or Digital — zwei Modus-Karten (je nach t.formatMode).
 function PrintDigitalCover({ theme, t }) {
-  const mode = t.formatMode || 'both';
+  const mode = t.formatMode || 'digital';
   const cards = [];
   if (mode !== 'digital') cards.push({ icon:PrinterLine, head:'Printable', text:t.printText });
   if (mode !== 'print')   cards.push({ icon:TabletLine,  head:'Digital',   text:t.digitalText });
+  // Überschrift folgt dem Modus — eine Digital-only-Folie darf nicht "Print or digital" versprechen.
+  const HEADS = {
+    both:    { eyebrow:'However you like',   lines:['Print', 'or digital'] },
+    print:   { eyebrow:'Made to print',      lines:['Print', 'at home'] },
+    digital: { eyebrow:'Instant download',   lines:['Digital', 'download'] },
+  };
+  const hd = HEADS[mode] || HEADS.digital;
   const cw = cards.length > 1 ? 420 : 600;
   const rad = theme.frame === 'round' ? 22 : 12;
   return (<div style={{ width:1080, height:1080, background:theme.ground, position:'relative', overflow:'hidden', fontFamily:themeBody(theme) }}>
     <BgPattern t={t} ground={theme.ground} />
     {theme.motif === 'halftone' && <Halftone color={withAlpha(BRAND.white,0.06)} size={14} />}
-    <SquareHead theme={theme} t={t} eyebrow="However you like" lines={['Print', 'or digital']} />
+    <SquareHead theme={theme} t={t} eyebrow={hd.eyebrow} lines={hd.lines} />
     <div style={{ position:'absolute', top:380, left:60, right:60, display:'flex', justifyContent:'center', gap:40 }}>
       {cards.map((c, i) => (
         <div key={i} style={{ width:cw, background:theme.frameBg, border:`${theme.frameBorderW}px solid ${theme.frameBorder}`,
@@ -2141,8 +2277,13 @@ const DEFAULTS = { title:'Cute Animals', subtitle:'30 hand-drawn anime motifs to
   featuresCustom:'',
   /* ── Etsy shop assets (1:1) ── */
   pageNoun:'Pages',
-  shopHero:true, shopBundle:true, shopBeforeAfter:true, shopBAGrid:true, shopFormats:true, shopHuman:true, shopAbout:true, shopComparison:true,
-  formatMode:'both',
+  shopHero:true, shopBundle:true, shopBeforeAfter:true, shopBAGrid:true, shopMockup:true, shopFormats:true, shopHuman:true, shopAbout:true, shopComparison:true,
+  // Tablet-Mockup: Loch-Koordinaten kommen normal aus der Alpha-Erkennung; die Scr*-Werte
+  // sind der Hand-Override (mockupManual) und entsprechen dem Ria-Front-Mockup.
+  mockupEyebrow:'Digital download', mockupCaption:'Instant PDF\ncolor on any device',
+  mockupSize:84, mockupTop:92, mockupFit:'contain', mockupScreenBg:'#12100f',
+  mockupManual:false, mockupScrX:36, mockupScrY:44.5, mockupScrW:28, mockupScrH:44.4,
+  formatMode:'digital',
   /* Before-&-After-Raster — Paare + optionale Icon-Spalte / Zielgruppen-Zeile */
   baLayout:'rows3', baHeadline:'Before &\nafter coloring',
   // Default bewusst schlank: nur die Bildpaare. Icon-Spalte + Zielgruppen-Zeile sind
@@ -2204,7 +2345,43 @@ const NPAGES = 8;
 const NPAIRS = 4; // Before-&-After-Paare (3 Reihen nutzen 1–3, 2×2 alle 4)
 // Frische Slot-Struktur (Funktion, damit sich Themes nie dieselben Arrays teilen).
 const emptyImgs = () => ({ hero:null, heroPBN:null, pages:Array(NPAGES).fill(null),
-  baLine:Array(NPAIRS).fill(null), baColor:Array(NPAIRS).fill(null) });
+  baLine:Array(NPAIRS).fill(null), baColor:Array(NPAIRS).fill(null),
+  mockup:null, mockupScreen:null }); // mockupScreen = Alpha-Fund von detectScreenRect, kein Bild
+
+/* ── Bild-Auto-Import ──────────────────────────────────────────────────────────
+   Eine Webseite darf keinen Ordner von sich aus lesen. Deshalb zwei Wege zum selben
+   Ziel: auf localhost das Verzeichnis-Listing des Servers auswerten (laeuft ohne Klick),
+   unter file:// der Ordner-Button (<input webkitdirectory>). Beide fuellen ueber
+   fillAutoImages ausschliesslich LEERE Slots — von Hand abgelegte Bilder gewinnen immer. */
+const AUTO_DIR = 'reference/auto/';
+const AUTO_EXT = /\.(png|jpe?g|webp|gif|avif)$/i;
+// Dateiname (ohne Pfad/Endung, klein, _ wie -) → Slot. Unbekannte Namen werden ignoriert,
+// der Ordner darf also auch anderes enthalten.
+function autoSlotFor(name) {
+  const b = String(name).replace(/^.*[\\/]/, '').replace(AUTO_EXT, '').toLowerCase().replace(/_/g, '-').trim();
+  if (b === 'hero') return { kind:'hero' };
+  if (b === 'hero-pbn' || b === 'heropbn') return { kind:'heroPBN' };
+  if (b === 'mockup') return { kind:'mockup' };
+  let m = b.match(/^page-(\d+)$/);
+  if (m) { const i = +m[1] - 1; return i >= 0 && i < NPAGES ? { kind:'pages', i } : null; }
+  m = b.match(/^ba-(\d+)-(line|color)$/);
+  if (m) { const i = +m[1] - 1; return i >= 0 && i < NPAIRS ? { kind:m[2] === 'line' ? 'baLine' : 'baColor', i } : null; }
+  return null;
+}
+// Verzeichnis-Listing des Dev-Servers parsen. Unter file:// gibt es keins → leere Liste,
+// dann bleibt nur der Ordner-Button.
+async function scanAutoDir() {
+  if (!/^https?:$/.test(location.protocol)) return [];
+  try {
+    const res = await fetch(AUTO_DIR, { cache:'no-store' });
+    if (!res.ok) return [];
+    const doc = new DOMParser().parseFromString(await res.text(), 'text/html');
+    return [...doc.querySelectorAll('a[href]')]
+      .map(a => decodeURIComponent(a.getAttribute('href') || '').replace(/^.*[\\/]/, ''))
+      .filter(n => AUTO_EXT.test(n) && autoSlotFor(n))
+      .map(n => ({ name:n, url:AUTO_DIR + encodeURIComponent(n) }));
+  } catch (e) { return []; }
+}
 function App() {
   const saved = loadSaved();
   const [themeKey, setThemeKey] = useState(saved.themeKey || 'kids');
@@ -2218,6 +2395,7 @@ function App() {
   const [pdfTarget, setPdfTarget] = useState(PDF_TARGETS[saved.pdfTarget] ? saved.pdfTarget : 'off');
   const [zoom, setZoom] = useState(null); // null = Fit (per-board default scale)
   const [imagesByTheme, setImagesByTheme] = useState({}); // Bilder sind ObjectURLs → nicht persistierbar
+  const [autoNote, setAutoNote] = useState('');           // Rückmeldung des Bild-Auto-Imports
   const [colorsByTheme, setColorsByTheme] = useState(saved.colorsByTheme || {}); // per-theme palette overrides
   // Back-Text pro Theme: jedes Theme hat seinen eigenen Preset-Klappentext, also wird auch der Override pro Theme gehalten.
   const [blurbByTheme, setBlurbByTheme] = useState(() => {
@@ -2263,8 +2441,8 @@ function App() {
   if (fontSel.body)  view.bodyFont  = fontSel.body;  // greift via themeBody() (Klappentext + What's-Inside)
   // Spread über EMPTY_IMGS: alte Projekte ohne baLine/baColor bekommen leere Slots statt undefined.
   const imgs = { ...emptyImgs(), ...(imagesByTheme[themeKey] || {}) };
-  const imgSlots = NPAGES + 2 + NPAIRS * 2;
-  const imgFilled = [imgs.hero, imgs.heroPBN, ...imgs.pages, ...(imgs.baLine || []), ...(imgs.baColor || [])].filter(Boolean).length;
+  const imgSlots = NPAGES + 3 + NPAIRS * 2;
+  const imgFilled = [imgs.hero, imgs.heroPBN, imgs.mockup, ...imgs.pages, ...(imgs.baLine || []), ...(imgs.baColor || [])].filter(Boolean).length;
   const set = (k, v) => setT(s => ({ ...s, [k]: v }));
   const setColor = (token, val) => setColorsByTheme(m => ({ ...m, [themeKey]: { ...(m[themeKey] || {}), [token]: val } }));
   const applyPalette = p => setColorsByTheme(m => ({ ...m, [themeKey]: { ...p } }));
@@ -2322,10 +2500,60 @@ function App() {
     const arr = (imgs[which] || Array(NPAIRS).fill(null)).slice(); arr[i] = url;
     setImagesByTheme(m => ({ ...m, [themeKey]: { ...imgs, [which]:arr } }));
   }
+  // Mockup: Bild laden, Displayloch per Alpha-Analyse suchen, beides zusammen ablegen.
+  // Schlaegt die Erkennung fehl (kein Loch, getaintetes Canvas), bleibt mockupScreen null →
+  // das Artboard faellt auf MOCKUP_FALLBACK zurueck und die UI bietet den Hand-Override an.
+  async function uploadMockup(file) {
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    const screen = await screenRectFromUrl(url);
+    setImagesByTheme(m => ({ ...m, [themeKey]: { ...emptyImgs(), ...(m[themeKey] || {}), mockup:url, mockupScreen:screen } }));
+  }
+  // Auto-Import: Liste aus {name, url} oder {name, file} in die leeren Slots des aktiven
+  // Themes legen. Belegte Slots bleiben unangetastet — Handarbeit schlaegt Automatik.
+  // ObjectURLs entstehen erst beim tatsaechlichen Einsetzen, sonst leckt jeder Fehlversuch.
+  async function fillAutoImages(items) {
+    const cur = imgs;
+    const next = { ...cur, pages:cur.pages.slice(),
+      baLine:(cur.baLine || []).slice(), baColor:(cur.baColor || []).slice() };
+    let n = 0, freshMockup = null;
+    for (const it of items) {
+      const slot = autoSlotFor(it.name); if (!slot) continue;
+      const taken = slot.i == null ? !!next[slot.kind] : !!next[slot.kind][slot.i];
+      if (taken) continue;
+      const url = it.url || URL.createObjectURL(it.file);
+      if (slot.i == null) next[slot.kind] = url; else next[slot.kind][slot.i] = url;
+      if (slot.kind === 'mockup') freshMockup = url;
+      n++;
+    }
+    if (!n) return 0;
+    if (freshMockup) next.mockupScreen = await screenRectFromUrl(freshMockup);
+    setImagesByTheme(m => ({ ...m, [themeKey]: next }));
+    return n;
+  }
+  // Ordner-Button (<input webkitdirectory>) — funktioniert auch beim Doppelklick auf index.html.
+  async function importFolder(fileList) {
+    const files = [...(fileList || [])].filter(f => AUTO_EXT.test(f.name) && autoSlotFor(f.name));
+    if (!files.length) { setAutoNote('Keine passend benannten Bilder im Ordner gefunden.'); return; }
+    const n = await fillAutoImages(files.map(f => ({ name:f.name, file:f })));
+    setAutoNote(n ? `${n} Bild(er) aus dem Ordner übernommen.` : 'Alle passenden Slots waren schon belegt.');
+  }
+  // Einmal beim Start: auf localhost den Ordner selbst einlesen. Bilder liegen nie im
+  // localStorage, die Slots sind hier also garantiert leer — es wird nichts überschrieben.
+  React.useEffect(() => {
+    let dead = false;
+    (async () => {
+      const items = await scanAutoDir();
+      if (dead || !items.length) return;
+      const n = await fillAutoImages(items);
+      if (!dead && n) setAutoNote(`${n} Bild(er) automatisch aus ${AUTO_DIR} geladen.`);
+    })();
+    return () => { dead = true; };
+  }, []);
   // Bilder des aktiven Themes leeren: ObjectURLs freigeben (kein Reststand) und Slots zurücksetzen.
   function resetImages() {
     const cur = imagesByTheme[themeKey];
-    if (cur) [cur.hero, cur.heroPBN, ...(cur.pages || []), ...(cur.baLine || []), ...(cur.baColor || [])]
+    if (cur) [cur.hero, cur.heroPBN, cur.mockup, ...(cur.pages || []), ...(cur.baLine || []), ...(cur.baColor || [])]
       .forEach(u => { if (u) { try { URL.revokeObjectURL(u); } catch (e) {} } });
     setImagesByTheme(m => ({ ...m, [themeKey]: emptyImgs() }));
   }
@@ -2342,6 +2570,7 @@ function App() {
     ['etsyhero', 2, 'Etsy Hero', 'shopHero'], ['bundlegrid', 2, 'In This Bundle', 'shopBundle'],
     ['beforeafter', 2, 'Linework + Colored', 'shopBeforeAfter'],
     ['bagrid', 2, 'Before & After', 'shopBAGrid'],
+    ['mockup', 2, 'On Your Tablet', 'shopMockup'],
     ['printdigital', 2, 'Print or Digital', 'shopFormats'], ['humanloop', 2, 'Human in the Loop', 'shopHuman'],
     ['about', 2, 'About', 'shopAbout'], ['comparison', 2, 'Comparison', 'shopComparison'],
   ];
@@ -2430,6 +2659,9 @@ function App() {
     } finally {
       ReactDOM.flushSync(() => setT(s => ({ ...s, ...prev })));
     }
+    // Projekt-Config mit in die ZIP: der Stand, der die Assets erzeugt hat, ist so
+    // reproduzierbar (Snapshot mit den echten Badge-Einstellungen, nicht dem WEB-Zustand).
+    zip.file(projectFileName(), JSON.stringify(await projectSnapshot()));
     const zipBlob = await zip.generateAsync({ type:'blob' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(zipBlob); a.download = `${base} Assets${targetTag}.zip`;
@@ -2444,19 +2676,25 @@ function App() {
     finally { setBusy(''); }
   }
 
+  // Kompletten Stand (alle Themes: Texte, Farben, Schriften UND Bilder) als Objekt —
+  // gemeinsam genutzt von „Projekt speichern" und dem Komplett-ZIP.
+  async function projectSnapshot() {
+    return {
+      __cd2: true, version: PROJECT_VERSION, savedAt: new Date().toISOString(),
+      themeKey, t, colorsByTheme, blurbByTheme, hookByTheme, fontByTheme,
+      imagesByTheme: await serializeImages(imagesByTheme),
+    };
+  }
+  const projectFileName = () => `${exportBase()} — Cover-Projekt.json`;
   // Kompletten Stand (alle Themes: Texte, Farben, Schriften UND Bilder) als .json sichern.
   async function saveProject() {
     setSavingProject(true);
     try {
-      const data = {
-        __cd2: true, version: PROJECT_VERSION, savedAt: new Date().toISOString(),
-        themeKey, t, colorsByTheme, blurbByTheme, hookByTheme, fontByTheme,
-        imagesByTheme: await serializeImages(imagesByTheme),
-      };
+      const data = await projectSnapshot();
       const blob = new Blob([JSON.stringify(data)], { type:'application/json' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = `${exportBase()} — Cover-Projekt.json`;
+      a.download = projectFileName();
       a.click(); URL.revokeObjectURL(a.href);
     } finally { setSavingProject(false); }
   }
@@ -2637,7 +2875,8 @@ function App() {
           {[['shopHero','Hero / Cover','Haupt-Listingbild (LC) — das erste Bild im Etsy-Listing'],
             ['shopBundle','Motiv-Grid „In This Bundle"','Übersicht aller enthaltenen Motive'],
             ['shopBeforeAfter','Linework + koloriert','Vorlage neben koloriertem Ergebnis'],
-            ['shopBAGrid','Before & After (Raster)','Mehrere Vorher/Nachher-Paare — Details unten in „Before & After"']].map(([k, lbl, desc]) => (
+            ['shopBAGrid','Before & After (Raster)','Mehrere Vorher/Nachher-Paare — Details unten in „Before & After"'],
+            ['shopMockup','Tablet-Mockup','Cover im Display eines Mockup-PNGs — Details unten in „Tablet-Mockup"']].map(([k, lbl, desc]) => (
             <div key={k} style={{ display:'flex', flexDirection:'column', gap:2 }}>
               <label className="check"><input type="checkbox" checked={t[k] === true} onChange={e => set(k, e.target.checked)} /> {lbl}</label>
               <div className="hint" style={{ marginLeft:26 }}>{desc}</div>
@@ -2666,6 +2905,46 @@ function App() {
             <input type="text" value={t.baFooter} placeholder="leer = ausblenden" onChange={e => set('baFooter', e.target.value)} /></div>
           <div className="hint">„3 Reihen" nutzt Paar 1–3, „2×2" alle vier. Die Bild-Slots liegen in der Bild-Leiste über der Vorschau.</div>
         </Sec>
+
+        <Sec tier="voll" title="Tablet-Mockup">
+          <div className="hint">Das Mockup-PNG liegt in der Bild-Leiste. Der Displaybereich muss <b>transparent</b> (ausgestanzt) sein — er wird beim Ablegen automatisch gefunden, das Cover kommt dahinter.</div>
+          {(() => {
+            const sc = imgs.mockupScreen;
+            if (!imgs.mockup) return <div className="hint">Noch kein Mockup abgelegt.</div>;
+            if (!sc) return <div className="hint" style={{ color:'var(--crimson)' }}>
+              Kein transparentes Displayloch gefunden. Prüfe, ob der Bildschirmbereich wirklich ausgestanzt ist (Alpha 0, nicht schwarz gefüllt) — oder setze das Rechteck unten von Hand.</div>;
+            const q = sc.fill >= 0.9;
+            return <div className="hint" style={{ color:q ? '#4a7c3f' : 'var(--crimson)' }}>
+              {q ? '✓ ' : '⚠ '}Display erkannt: {(sc.w * 100).toFixed(1)} × {(sc.h * 100).toFixed(1)} % des Bildes,
+              Seitenverhältnis {(sc.w / sc.h * (sc.ar || 1)).toFixed(3)} (Cover braucht 0.773).
+              {!q && ' Der Fund ist nicht rechteckig — vermutlich verdeckt etwas das Display. Bitte von Hand setzen.'}</div>;
+          })()}
+          <div className="row"><label>Eyebrow (oben)</label>
+            <input type="text" value={t.mockupEyebrow} placeholder="leer = ausblenden" onChange={e => set('mockupEyebrow', e.target.value)} /></div>
+          <div className="row"><label>Bildunterschrift</label>
+            <textarea rows={2} value={t.mockupCaption} onChange={e => set('mockupCaption', e.target.value)} /></div>
+          <div className="hint">Eine Zeile = eine Zeile, letzte in Akzentfarbe. Leer = ausblenden.</div>
+          <div className="row w-s"><label>Größe (% der Kante)</label>
+            <input type="number" value={t.mockupSize} onChange={e => set('mockupSize', e.target.value)} /></div>
+          <div className="row w-s"><label>Y-Position (px)</label>
+            <input type="number" value={t.mockupTop} onChange={e => set('mockupTop', e.target.value)} /></div>
+          <div className="row w-m"><label>Cover im Display</label>
+            <select value={t.mockupFit} onChange={e => set('mockupFit', e.target.value)}>
+              <option value="contain">Einpassen (ganzes Cover, Balken)</option>
+              <option value="cover">Füllen (randlos, schneidet an)</option>
+            </select></div>
+          <div className="row w-s"><label>Displayfarbe</label>
+            <input type="color" value={t.mockupScreenBg} onChange={e => set('mockupScreenBg', e.target.value)} /></div>
+          <div className="hint">Sichtbar als Balken, wenn das Cover-Format (0.773) nicht zum Display passt. Dunkel wirkt wie ein Reader, hell wie Papier.</div>
+          <label className="check"><input type="checkbox" checked={t.mockupManual === true} onChange={e => set('mockupManual', e.target.checked)} /> Displayrechteck von Hand setzen</label>
+          {t.mockupManual && <>
+            <div className="hint">Angaben in % der Mockup-Bildbreite bzw. -höhe, gemessen ab oben links.</div>
+            <div className="row w-s"><label>X (%)</label><input type="number" step="0.1" value={t.mockupScrX} onChange={e => set('mockupScrX', e.target.value)} /></div>
+            <div className="row w-s"><label>Y (%)</label><input type="number" step="0.1" value={t.mockupScrY} onChange={e => set('mockupScrY', e.target.value)} /></div>
+            <div className="row w-s"><label>Breite (%)</label><input type="number" step="0.1" value={t.mockupScrW} onChange={e => set('mockupScrW', e.target.value)} /></div>
+            <div className="row w-s"><label>Höhe (%)</label><input type="number" step="0.1" value={t.mockupScrH} onChange={e => set('mockupScrH', e.target.value)} /></div>
+          </>}
+        </Sec>
       </aside>
       <div className="resizer" onMouseDown={e => startResize(e, 'left')} title="Inhalt-Sidebar breiter/schmaler ziehen" />
 
@@ -2684,6 +2963,7 @@ function App() {
                 <div className="ib-grid c1">
                   <DropFile label="Hero — colored" filled={!!imgs.hero} onFile={uploadHero} />
                   <DropFile label="Hero — PBN / lineart" filled={!!imgs.heroPBN} onFile={uploadHeroPBN} />
+                  <DropFile label="Tablet-Mockup (PNG, Display transparent)" filled={!!imgs.mockup} onFile={uploadMockup} />
                 </div>
               </div>
               <div className="ib-col">
@@ -2707,6 +2987,12 @@ function App() {
             </div>
             <div className="ib-foot">
               <button className="ib-btn" onClick={resetImages}>↺ Bilder zurücksetzen ({themeKey})</button>
+              <label className="ib-btn" style={{ cursor:'pointer' }}
+                title={`Füllt leere Slots aus einem Ordner. Namen: hero, hero-pbn, mockup, page-1…${NPAGES}, ba-1-line/ba-1-color …`}>
+                📁 Ordner laden
+                <input type="file" accept="image/*" multiple webkitdirectory="" directory="" hidden
+                  onChange={e => { importFolder(e.target.files); e.target.value = ''; }} />
+              </label>
               <div className="ib-set"><label>Asset-Format</label>
                 <select value={t.assetAspect} onChange={e => set('assetAspect', e.target.value)}>
                   <option value="portrait">Hochkant (3:4)</option>
@@ -2721,6 +3007,7 @@ function App() {
               <span className="hint">Klicken oder Bild hineinziehen · pro Theme. Back/What's-Inside nutzen Bild 1–4, Gallery alle 8.
                 Format/Anpassung gelten für Back, What's Inside &amp; Gallery.</span>
             </div>
+            {!!autoNote && <div className="hint" style={{ marginTop:6 }}>{autoNote}</div>}
           </>}
         </div>
         <div className="stage-bar">
@@ -2767,6 +3054,8 @@ function App() {
                 <BeforeAfterCover theme={view} t={t} hero={imgs.hero} heroPBN={imgs.heroPBN} /></Board>}
               {t.shopBAGrid && <Board key={'bagrid-' + themeKey} w={1080} h={1080} scale={zoom != null ? zoom : 0.25} label="Shop · Before & After 1:1" fileBase={'bagrid-' + themeKey} registerRef={registerRef}>
                 <BeforeAfterGridCover theme={view} t={t} lineArt={imgs.baLine} colored={imgs.baColor} hero={imgs.hero} heroPBN={imgs.heroPBN} /></Board>}
+              {t.shopMockup && <Board key={'mockup-' + themeKey} w={1080} h={1080} scale={zoom != null ? zoom : 0.25} label="Shop · On Your Tablet 1:1" fileBase={'mockup-' + themeKey} registerRef={registerRef}>
+                <MockupCover theme={view} t={t} mockup={imgs.mockup} screen={imgs.mockupScreen} hero={imgs.hero} heroPBN={imgs.heroPBN} pages={imgs.pages} /></Board>}
             </div>
           </div>
         </div>

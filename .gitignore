@@ -4,3 +4,6 @@ Thumbs.db
 *.log
 .vscode/
 .idea/
+
+# Interne Referenzen & Marken-Assets (Ria-Mockups, Etsy-Screenshots) — nie ins public Repo
+reference/

@@ -2,6 +2,21 @@
 
 Nennenswerte Änderungen am Cover Designer. Neueste zuerst.
 
+## 2026-09-08 — Projekt-Config im Komplett-ZIP, Bild-Auto-Import, Tablet-Mockup
+
+- **ZIP komplett** legt zusätzlich zu `PNG/` und `WEB/` die **Projekt-Config**
+  (`… — Cover-Projekt.json`) ins ZIP-Root — derselbe Stand, den „💾 Speichern" schreibt
+  (alle Themes, Texte, Farben, Schriften und eingebettete Bilder). Der Snapshot entsteht
+  **nach** dem Zurücksetzen der WEB-Abschaltung, enthält also die echten Badge-Einstellungen.
+  Ein Assets-Paket ist damit für sich reproduzierbar.
+- **Bild-Auto-Import:** Bilder aus `reference/auto/` werden auf `localhost` beim Start
+  automatisch eingelesen, alternativ per Knopf **„📁 Ordner laden"**. Zuordnung über den
+  Dateinamen (`hero.png`, `page-1.png`, `ba-1-line.png` …); es werden ausschließlich
+  **leere** Slots gefüllt.
+- **Tablet-Mockup:** ein PNG mit transparent ausgestanztem Display genügt — der
+  Displaybereich wird per Alpha-Analyse gefunden und das Cover dahintergelegt.
+  Hand-Override über die Mockup-Felder.
+
 ## 2026-08-09 — PNG-Export auf den Rahmen des PDF-Tools
 
 - Neuer Header-Select **„PNG-Ziel"**: `aus (nativ)` · `Freebie · LETTER` (2432×3182) ·
